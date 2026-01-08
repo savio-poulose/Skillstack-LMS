@@ -1,0 +1,95 @@
+const User = require("../models/user.model");
+const bcrypt = require("bcrypt");
+const jwt = require('jsonwebtoken');
+
+//registerUser
+exports.registerUser = async (req, res) => {
+  // console.log("Register route HIT:", req.body);
+  
+
+  try {
+    const { name, email, phone, age, gender, password, role } = req.body;
+    //validating if all exist
+     if (!name || !email || !phone || !age || !gender || !password) {
+      return res
+        .status(400)
+        .json({ message: "All fields are required" });
+    }
+    //checking for existing
+    const doExist = await User.findOne({ email: email });
+    if (doExist) {
+      return res.status(400).json({ message: "Email already exists" });
+
+    } else {
+      //pasword hashing
+      const hashedPassword = await bcrypt.hash(password, 10);
+      // console.log(hashedPassword);
+
+      const user = await User.create({
+        name,
+        email,
+        phone,
+        age,
+        gender,
+        password: hashedPassword,
+        role,
+      });
+      
+
+      return res.status(201).json({
+      message: "User registered successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+//login
+exports.loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email: email });
+
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+    //if user exist , checking the bycripted password to user.password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if(!isMatch)
+      return res.status(400).json({ message: "Incorrect password" });
+    //createing jwt token
+      const token = jwt.sign({id:user._id,role:user.role},
+        process.env.JWT_SECRET,
+        {expiresIn:"7d"}
+      );
+
+          res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, // true in production (HTTPS)
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      message: "Login successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+    
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
