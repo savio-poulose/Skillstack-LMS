@@ -13,12 +13,12 @@ const courseSchema = new mongoose.Schema(
     },
 
     thumbnail: {
-      type: String, // image url
+      type: String,
     },
 
     price: {
       type: Number,
-      required: true,
+      default: 0,
     },
 
     category: {
@@ -26,10 +26,18 @@ const courseSchema = new mongoose.Schema(
       required: true,
     },
 
-    isPublished: {
-      type: Boolean,
-      default: true,
+    status: {
+      type: String,
+      enum: ["draft", "published"],
+      default: "draft",
     },
+
+    notesPdf: {
+      type: String,
+      default: null,
+    },
+
+    
   },
   { timestamps: true }
 );
