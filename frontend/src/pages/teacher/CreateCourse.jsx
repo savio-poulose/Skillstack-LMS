@@ -10,6 +10,7 @@ const CreateCourse = () => {
     description: "",
     price: "",
     category: "",
+    status: "draft",
   });
 
   const navigate = useNavigate();
@@ -172,9 +173,15 @@ const CreateCourse = () => {
                     <label className="block text-sm font-medium mb-1">
                       Status
                     </label>
-                    <select className="w-full border rounded-lg px-3 py-2">
-                      <option>Draft</option>
-                      <option>Published</option>
+                    <select
+                      value={formData.status}
+                      onChange={(e) =>
+                        setFormData({ ...formData, status: e.target.value })
+                      }
+                      className="w-full border rounded-lg px-3 py-2"
+                    >
+                      <option value="draft">Draft</option>
+                      <option value="published">Published</option>
                     </select>
                   </div>
 

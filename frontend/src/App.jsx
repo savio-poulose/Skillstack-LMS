@@ -15,7 +15,8 @@ import MyCourses from "./pages/student/MyCourses";
 import StudentProfile from "./pages/student/StudentProfile";
 
 import CreateCourse from "./pages/teacher/CreateCourse";
-import CourseEditor from "./pages/teacher/CourseEditor"
+import CourseEditor from "./pages/teacher/CourseEditor";
+import TeacherCourses from "./pages/teacher/MyCourses"
 
 function App() {
   return (
@@ -86,6 +87,14 @@ function App() {
           element={
             <ProtectedRoute>
               <CourseEditor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher/my-courses"
+          element={
+            <ProtectedRoute>
+              <TeacherCourses />
             </ProtectedRoute>
           }
         />

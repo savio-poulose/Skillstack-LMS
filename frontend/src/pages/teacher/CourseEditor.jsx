@@ -1,5 +1,7 @@
 import { useParams } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import api from "../../api";
+
 import TeacherSidebar from "../../components/teacherComponents/TeacherSidebar";
 import TeacherHeader from "../../components/teacherComponents/TeacherHeader";
 
@@ -8,28 +10,59 @@ const CourseEditor = () => {
 
   const [lessons, setLessons] = useState([]);
   const [selectedLesson, setSelectedLesson] = useState(null);
-  const [showNotesEditor, setShowNotesEditor] = useState(false);
-  const [notesFile, setNotesFile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const addLesson = () => {
-    const newLesson = {
-      id: Date.now(),
-      title: "New Lesson",
-      youtubeUrl: "",
-      description: "",
+  // create mode
+  const [isCreating, setIsCreating] = useState(false);
+
+  const [formData, setFormData] = useState({
+    title: "",
+    youtubeUrl: "",
+    description: "",
+  });
+
+  // 🔹 FETCH LESSONS
+  useEffect(() => {
+    const fetchLessons = async () => {
+      try {
+        const res = await api.get(`/courses/${courseId}/lessons`);
+        setLessons(res.data);
+
+        if (res.data.length > 0) {
+          setSelectedLesson(res.data[0]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch lessons", error);
+      } finally {
+        setLoading(false);
+      }
     };
-    setLessons([...lessons, newLesson]);
-    setSelectedLesson(newLesson);
-    setShowNotesEditor(false);
-  };
 
-  const updateLesson = (field, value) => {
-    setLessons((prev) =>
-      prev.map((l) =>
-        l.id === selectedLesson.id ? { ...l, [field]: value } : l
-      )
-    );
-    setSelectedLesson((prev) => ({ ...prev, [field]: value }));
+    fetchLessons();
+  }, [courseId]);
+
+  // 🔹 CREATE LESSON
+  const handleCreateLesson = async () => {
+    if (!formData.title || !formData.youtubeUrl) {
+      alert("Title and YouTube URL are required");
+      return;
+    }
+
+    try {
+      const res = await api.post(
+        `/courses/${courseId}/lessons`,
+        formData
+      );
+
+      setLessons((prev) => [...prev, res.data]);
+      setSelectedLesson(res.data);
+
+      setFormData({ title: "", youtubeUrl: "", description: "" });
+      setIsCreating(false);
+    } catch (error) {
+      console.error("Failed to create lesson", error);
+      alert("Failed to create lesson");
+    }
   };
 
   return (
@@ -45,13 +78,16 @@ const CourseEditor = () => {
             <div className="p-4 border-b">
               <h2 className="text-lg font-semibold">Course Content</h2>
               <p className="text-sm text-gray-500">
-                Course ID: {courseId}
+                {lessons.length} lesson{lessons.length !== 1 ? "s" : ""}
               </p>
             </div>
 
             <div className="p-4">
               <button
-                onClick={addLesson}
+                onClick={() => {
+                  setIsCreating(true);
+                  setSelectedLesson(null);
+                }}
                 className="w-full py-2 text-sm rounded-lg border border-dashed hover:bg-gray-50"
               >
                 + Add Lesson
@@ -59,15 +95,23 @@ const CourseEditor = () => {
             </div>
 
             <ul className="px-4 pb-4 space-y-2 text-sm">
+              {loading && (
+                <p className="text-gray-500">Loading lessons...</p>
+              )}
+
+              {!loading && lessons.length === 0 && (
+                <p className="text-gray-500">No lessons yet</p>
+              )}
+
               {lessons.map((lesson, index) => (
                 <li
-                  key={lesson.id}
+                  key={lesson._id}
                   onClick={() => {
                     setSelectedLesson(lesson);
-                    setShowNotesEditor(false);
+                    setIsCreating(false);
                   }}
                   className={`p-3 border rounded-lg cursor-pointer ${
-                    selectedLesson?.id === lesson.id
+                    selectedLesson?._id === lesson._id
                       ? "bg-gray-100 font-medium"
                       : "hover:bg-gray-50"
                   }`}
@@ -75,50 +119,15 @@ const CourseEditor = () => {
                   {index + 1}. {lesson.title}
                 </li>
               ))}
-
-              {/* COURSE NOTES PDF */}
-              <li
-                onClick={() => {
-                  setSelectedLesson(null);
-                  setShowNotesEditor(true);
-                }}
-                className={`p-3 border rounded-lg mt-4 cursor-pointer ${
-                  showNotesEditor
-                    ? "bg-gray-100 font-medium"
-                    : "hover:bg-gray-50"
-                }`}
-              >
-                📄 Course Notes (PDF)
-              </li>
             </ul>
           </aside>
 
           {/* RIGHT PANEL */}
           <main className="flex-1 p-6 overflow-y-auto">
-            {/* EMPTY STATE */}
-            {!selectedLesson && !showNotesEditor && (
-              <div className="h-full flex items-center justify-center">
-                <div className="text-center max-w-md">
-                  <h3 className="text-lg font-semibold mb-2">
-                    Start building your course
-                  </h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                    Add lessons or upload course notes
-                  </p>
-                  <button
-                    onClick={addLesson}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-                  >
-                    Add your first lesson
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* LESSON EDITOR */}
-            {selectedLesson && (
+            {/* CREATE MODE */}
+            {isCreating && (
               <div className="max-w-3xl space-y-6">
-                <h2 className="text-xl font-semibold">Edit Lesson</h2>
+                <h2 className="text-xl font-semibold">Add New Lesson</h2>
 
                 <div>
                   <label className="block text-sm font-medium mb-1">
@@ -126,9 +135,12 @@ const CourseEditor = () => {
                   </label>
                   <input
                     type="text"
-                    value={selectedLesson.title}
+                    value={formData.title}
                     onChange={(e) =>
-                      updateLesson("title", e.target.value)
+                      setFormData({
+                        ...formData,
+                        title: e.target.value,
+                      })
                     }
                     className="w-full border rounded-lg px-3 py-2"
                   />
@@ -136,13 +148,16 @@ const CourseEditor = () => {
 
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    YouTube Video URL
+                    YouTube URL
                   </label>
                   <input
                     type="text"
-                    value={selectedLesson.youtubeUrl}
+                    value={formData.youtubeUrl}
                     onChange={(e) =>
-                      updateLesson("youtubeUrl", e.target.value)
+                      setFormData({
+                        ...formData,
+                        youtubeUrl: e.target.value,
+                      })
                     }
                     className="w-full border rounded-lg px-3 py-2"
                   />
@@ -154,50 +169,79 @@ const CourseEditor = () => {
                   </label>
                   <textarea
                     rows="4"
-                    value={selectedLesson.description}
+                    value={formData.description}
                     onChange={(e) =>
-                      updateLesson("description", e.target.value)
+                      setFormData({
+                        ...formData,
+                        description: e.target.value,
+                      })
                     }
                     className="w-full border rounded-lg px-3 py-2"
                   />
                 </div>
 
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg">
-                  Save Lesson
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleCreateLesson}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                  >
+                    Save Lesson
+                  </button>
+
+                  <button
+                    onClick={() => setIsCreating(false)}
+                    className="px-4 py-2 border rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             )}
 
-            {/* COURSE NOTES PDF EDITOR */}
-            {showNotesEditor && (
-              <div className="max-w-xl space-y-6">
+            {/* EMPTY STATE */}
+            {!isCreating && !selectedLesson && (
+              <div className="h-full flex items-center justify-center">
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold mb-2">
+                    Select or create a lesson
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Choose a lesson from the left panel
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* VIEW MODE */}
+            {!isCreating && selectedLesson && (
+              <div className="max-w-3xl space-y-6">
                 <h2 className="text-xl font-semibold">
-                  Course Notes (PDF)
+                  {selectedLesson.title}
                 </h2>
 
-                <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    YouTube Video URL
+                  </label>
                   <input
-                    type="file"
-                    accept="application/pdf"
-                    onChange={(e) =>
-                      setNotesFile(e.target.files[0])
-                    }
+                    type="text"
+                    value={selectedLesson.youtubeUrl}
+                    disabled
+                    className="w-full border rounded-lg px-3 py-2 bg-gray-100"
                   />
-
-                  {notesFile && (
-                    <p className="text-sm text-gray-600 mt-2">
-                      Selected: {notesFile.name}
-                    </p>
-                  )}
                 </div>
 
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg">
-                  Save Notes
-                </button>
-
-                <p className="text-xs text-gray-500">
-                  These notes will be used later to generate the final quiz.
-                </p>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    rows="4"
+                    value={selectedLesson.description || ""}
+                    disabled
+                    className="w-full border rounded-lg px-3 py-2 bg-gray-100"
+                  />
+                </div>
               </div>
             )}
           </main>
