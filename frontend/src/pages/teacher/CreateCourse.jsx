@@ -1,10 +1,14 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../../api";
+import toast from "react-hot-toast";
+
 import TeacherSidebar from "../../components/teacherComponents/TeacherSidebar";
 import TeacherHeader from "../../components/teacherComponents/TeacherHeader";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import api from "../../api"; // axios instance
 
 const CreateCourse = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -13,26 +17,45 @@ const CreateCourse = () => {
     status: "draft",
   });
 
-  const navigate = useNavigate();
+  const [thumbnail, setThumbnail] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const payload = {
-      ...formData,
-      price: Number(formData.price),
-      thumbnail: "https://picsum.photos/400/250",
-    };
+    if (!formData.title || !formData.description || !formData.category) {
+  toast.error("Title, description, and category are required");
+  return;
+}
+
 
     try {
-      const res = await api.post("/courses", payload);
+      setLoading(true);
+
+      const data = new FormData();
+      data.append("title", formData.title);
+      data.append("description", formData.description);
+      data.append("price", Number(formData.price));
+      data.append("category", formData.category);
+      data.append("status", formData.status);
+
+      // 🔥 THIS is the only thing Cloudinary needs from frontend
+      if (thumbnail) {
+        data.append("thumbnail", thumbnail); // must match upload.single("thumbnail")
+      }
+
+      const res = await api.post("/courses", data);
+      // ❌ DO NOT manually set multipart headers — axios handles it
+
+      toast.success("Course created successfully");
 
       const courseId = res.data._id;
-
       navigate(`/teacher/courses/${courseId}/editor`);
     } catch (error) {
       console.error(error);
-      alert("Failed to create course");
+      toast.error("Failed to create course");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -47,13 +70,12 @@ const CreateCourse = () => {
           <h1 className="text-2xl font-semibold mb-6">Create New Course</h1>
 
           <form
-            className="grid grid-cols-1 lg:grid-cols-12 gap-6"
             onSubmit={handleSubmit}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6"
           >
-            {/* LEFT SIDE */}
+            {/* LEFT */}
             <div className="lg:col-span-8 space-y-6">
               <div className="bg-white rounded-xl shadow-sm p-6 space-y-5">
-                {/* TITLE */}
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     Course Title
@@ -68,7 +90,6 @@ const CreateCourse = () => {
                   />
                 </div>
 
-                {/* SHORT DESCRIPTION */}
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     Short Description
@@ -77,27 +98,15 @@ const CreateCourse = () => {
                     rows="4"
                     value={formData.description}
                     onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
+                      setFormData({
+                        ...formData,
+                        description: e.target.value,
+                      })
                     }
                     className="w-full border rounded-lg px-3 py-2"
                   />
                 </div>
 
-                {/* WHAT YOU'LL LEARN */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    What you’ll learn
-                  </label>
-                  <textarea
-                    rows="3"
-                    placeholder="• Build full-stack MERN apps
-• Understand REST APIs
-• Deploy real projects"
-                    className="w-full border rounded-lg px-3 py-2"
-                  />
-                </div>
-
-                {/* PRICE + CATEGORY */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">
@@ -129,9 +138,8 @@ const CreateCourse = () => {
                       <option>Frontend Development</option>
                       <option>Backend Development</option>
                       <option>Full Stack Development</option>
-                      <option>Programming Basics</option>
                       <option>JavaScript</option>
-                      <option>Data Structures & Algorithms</option>
+                      <option>DSA</option>
                       <option>DevOps</option>
                     </select>
                   </div>
@@ -139,12 +147,13 @@ const CreateCourse = () => {
               </div>
             </div>
 
-            {/* RIGHT SIDE – CONTROL PANEL */}
+            {/* RIGHT */}
             <div className="lg:col-span-4">
               <div className="sticky top-6 space-y-6">
-                {/* THUMBNAIL */}
                 <div className="bg-white rounded-xl shadow-sm p-4">
-                  <p className="text-sm font-medium mb-3">Course Thumbnail</p>
+                  <p className="text-sm font-medium mb-3">
+                    Course Thumbnail
+                  </p>
 
                   <div className="border-2 border-dashed rounded-lg p-6 text-center">
                     <input
@@ -152,13 +161,16 @@ const CreateCourse = () => {
                       accept="image/*"
                       id="thumbnail"
                       className="hidden"
+                      onChange={(e) => setThumbnail(e.target.files[0])}
                     />
 
                     <label
                       htmlFor="thumbnail"
                       className="cursor-pointer text-blue-600 text-sm"
                     >
-                      Click to upload image
+                      {thumbnail
+                        ? thumbnail.name
+                        : "Click to upload image"}
                     </label>
 
                     <p className="text-xs text-gray-500 mt-2">
@@ -167,7 +179,6 @@ const CreateCourse = () => {
                   </div>
                 </div>
 
-                {/* SETTINGS + ACTION */}
                 <div className="bg-white rounded-xl shadow-sm p-4 space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">
@@ -176,7 +187,10 @@ const CreateCourse = () => {
                     <select
                       value={formData.status}
                       onChange={(e) =>
-                        setFormData({ ...formData, status: e.target.value })
+                        setFormData({
+                          ...formData,
+                          status: e.target.value,
+                        })
                       }
                       className="w-full border rounded-lg px-3 py-2"
                     >
@@ -187,9 +201,10 @@ const CreateCourse = () => {
 
                   <button
                     type="submit"
-                    className="w-full py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                    disabled={loading}
+                    className="w-full py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
                   >
-                    Create & Continue
+                    {loading ? "Creating..." : "Create & Continue"}
                   </button>
                 </div>
               </div>

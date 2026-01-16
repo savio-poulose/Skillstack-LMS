@@ -5,10 +5,7 @@ const courseSchema = new mongoose.Schema(
     title: { type: String, required: true },
     description: { type: String, required: true },
 
-    thumbnail: {
-      type: String,
-      default: "https://picsum.photos/400/250",
-    },
+    thumbnail: String,
 
     price: { type: Number, default: 0 },
     category: { type: String, required: true },
