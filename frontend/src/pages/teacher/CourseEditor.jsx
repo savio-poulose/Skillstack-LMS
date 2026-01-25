@@ -156,7 +156,7 @@ const CourseEditor = () => {
     try {
       await api.delete(`/courses/${courseId}`);
       toast.success("Course deleted successfully");
-      navigate("/teacher/courses");
+      navigate("/teacher/my-courses");
     } catch {
       toast.error("Failed to delete course");
     }

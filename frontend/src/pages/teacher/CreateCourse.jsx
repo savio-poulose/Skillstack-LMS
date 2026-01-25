@@ -14,6 +14,7 @@ const CreateCourse = () => {
     description: "",
     price: "",
     category: "",
+    level: "beginner",
     status: "draft",
   });
 
@@ -24,10 +25,9 @@ const CreateCourse = () => {
     e.preventDefault();
 
     if (!formData.title || !formData.description || !formData.category) {
-  toast.error("Title, description, and category are required");
-  return;
-}
-
+      toast.error("Title, description, and category are required");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -37,15 +37,14 @@ const CreateCourse = () => {
       data.append("description", formData.description);
       data.append("price", Number(formData.price));
       data.append("category", formData.category);
+      data.append("level", formData.level); 
       data.append("status", formData.status);
 
-      // 🔥 THIS is the only thing Cloudinary needs from frontend
       if (thumbnail) {
-        data.append("thumbnail", thumbnail); // must match upload.single("thumbnail")
+        data.append("thumbnail", thumbnail);
       }
 
       const res = await api.post("/courses", data);
-      // ❌ DO NOT manually set multipart headers — axios handles it
 
       toast.success("Course created successfully");
 
@@ -58,6 +57,7 @@ const CreateCourse = () => {
       setLoading(false);
     }
   };
+ 
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -67,7 +67,9 @@ const CreateCourse = () => {
         <TeacherHeader />
 
         <main className="flex-1 overflow-y-auto p-6">
-          <h1 className="text-2xl font-semibold mb-6">Create New Course</h1>
+          <h1 className="text-2xl font-semibold mb-6">
+            Create New Course
+          </h1>
 
           <form
             onSubmit={handleSubmit}
@@ -84,7 +86,10 @@ const CreateCourse = () => {
                     type="text"
                     value={formData.title}
                     onChange={(e) =>
-                      setFormData({ ...formData, title: e.target.value })
+                      setFormData({
+                        ...formData,
+                        title: e.target.value,
+                      })
                     }
                     className="w-full border rounded-lg px-3 py-2"
                   />
@@ -107,7 +112,7 @@ const CreateCourse = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       Price (₹)
@@ -116,7 +121,10 @@ const CreateCourse = () => {
                       type="number"
                       value={formData.price}
                       onChange={(e) =>
-                        setFormData({ ...formData, price: e.target.value })
+                        setFormData({
+                          ...formData,
+                          price: e.target.value,
+                        })
                       }
                       className="w-full border rounded-lg px-3 py-2"
                     />
@@ -129,7 +137,10 @@ const CreateCourse = () => {
                     <select
                       value={formData.category}
                       onChange={(e) =>
-                        setFormData({ ...formData, category: e.target.value })
+                        setFormData({
+                          ...formData,
+                          category: e.target.value,
+                        })
                       }
                       className="w-full border rounded-lg px-3 py-2"
                     >
@@ -137,10 +148,34 @@ const CreateCourse = () => {
                       <option>Web Development</option>
                       <option>Frontend Development</option>
                       <option>Backend Development</option>
+                      <option>Basic Programming</option>
                       <option>Full Stack Development</option>
                       <option>JavaScript</option>
                       <option>DSA</option>
                       <option>DevOps</option>
+                    </select>
+                  </div>
+
+                  {/* ✅ LEVEL SELECTOR */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Course Level
+                    </label>
+                    <select
+                      value={formData.level}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          level: e.target.value,
+                        })
+                      }
+                      className="w-full border rounded-lg px-3 py-2"
+                    >
+                      <option value="beginner">Beginner</option>
+                      <option value="intermediate">
+                        Intermediate
+                      </option>
+                      <option value="advanced">Advanced</option>
                     </select>
                   </div>
                 </div>
@@ -161,7 +196,9 @@ const CreateCourse = () => {
                       accept="image/*"
                       id="thumbnail"
                       className="hidden"
-                      onChange={(e) => setThumbnail(e.target.files[0])}
+                      onChange={(e) =>
+                        setThumbnail(e.target.files[0])
+                      }
                     />
 
                     <label
@@ -195,7 +232,9 @@ const CreateCourse = () => {
                       className="w-full border rounded-lg px-3 py-2"
                     >
                       <option value="draft">Draft</option>
-                      <option value="published">Published</option>
+                      <option value="published">
+                        Published
+                      </option>
                     </select>
                   </div>
 
@@ -204,7 +243,9 @@ const CreateCourse = () => {
                     disabled={loading}
                     className="w-full py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
                   >
-                    {loading ? "Creating..." : "Create & Continue"}
+                    {loading
+                      ? "Creating..."
+                      : "Create & Continue"}
                   </button>
                 </div>
               </div>

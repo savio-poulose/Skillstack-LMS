@@ -28,6 +28,7 @@ exports.createCourse = async (req, res) => {
       description: req.body.description,
       price: req.body.price,
       category: req.body.category,
+      level: req.body.level || "begginer",
       status: req.body.status,
       thumbnail: thumbnailUrl,
       createdBy: req.user.id,

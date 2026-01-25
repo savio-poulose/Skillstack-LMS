@@ -12,6 +12,13 @@ const enrollmentSchema = new mongoose.Schema(
       ref: "Course",
       required: true,
     },
+
+    paymentStatus: {
+      type: String,
+      enum: ["paid", "free"],
+      required: true,
+    },
+
     progress: {
       type: Number,
       default: 0,

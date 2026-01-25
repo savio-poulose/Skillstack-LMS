@@ -11,6 +11,8 @@ const userRoutes = require('./routes/user.routes.js')
 
 const lessonRoutes = require('./routes/lesson.route.js')
 
+const paymentRoutes =  require("./routes/payment.route")
+
 
 console.log("app.js ");
 
@@ -33,6 +35,8 @@ app.use("/api/enroll", enrollmentRoutes);
 app.use("/api/users", userRoutes);
 
 app.use("/api", lessonRoutes);
+
+app.use("/api/payments",paymentRoutes);
 
 
 

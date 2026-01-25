@@ -17,7 +17,8 @@ import StudentProfile from "./pages/student/StudentProfile";
 import CreateCourse from "./pages/teacher/CreateCourse";
 import CourseEditor from "./pages/teacher/CourseEditor";
 import TeacherCourses from "./pages/teacher/MyCourses";
-import TeacherProfile from "./pages/teacher/TeacherProfile"
+import TeacherProfile from "./pages/teacher/TeacherProfile";
+import PaymentPage from "./pages/student/Payment";
 
 function App() {
   return (
@@ -47,6 +48,14 @@ function App() {
           element={
             <ProtectedRoute>
               <CourseDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/course/:id/payment"
+          element={
+            <ProtectedRoute>
+              <PaymentPage/>
             </ProtectedRoute>
           }
         />
