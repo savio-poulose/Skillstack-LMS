@@ -105,12 +105,22 @@ const MyCourseDetail = () => {
           </div>
 
           {/* CTA */}
-          <button
-            onClick={() => console.log("Start learning")}
-            className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-          >
-            Start Learning
-          </button>
+         <button
+  onClick={() => {
+    if (lessons.length > 0) {
+      navigate(`/student/learn/${id}/${lessons[0]._id}`);
+    }
+  }}
+  disabled={lessons.length === 0}
+  className={`px-8 py-3 rounded-lg font-semibold transition ${
+    lessons.length === 0
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-blue-600 text-white hover:bg-blue-700"
+  }`}
+>
+  Start Learning
+</button>
+
         </main>
       </div>
     </div>

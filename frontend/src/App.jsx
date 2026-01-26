@@ -13,6 +13,8 @@ import MyCourses from "./pages/student/MyCourses";
 import MyCourseDetail from "./pages/student/MyCourseDetails";
 import StudentProfile from "./pages/student/StudentProfile";
 import PaymentPage from "./pages/student/Payment";
+import LearnCourse from "./pages/student/LearnCourse";
+
 
 // teacher
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
@@ -79,6 +81,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+  path="/student/learn/:courseId/:lessonId"
+  element={
+    <ProtectedRoute>
+      <LearnCourse />
+    </ProtectedRoute>
+  }
+/>
+
 
         <Route
           path="/student/profile"

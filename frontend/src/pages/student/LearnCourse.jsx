@@ -1,95 +1,105 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../api";
+import LearningSidebar from "../../components/studentComponents/LearningSidebar";
+
+const getYoutubeId = (url) => {
+  if (!url) return null;
+
+  const match = url.match(
+    /(?:youtube\.com.*(?:\?|&)v=|youtu\.be\/)([^"&?/\s]{11})/,
+  );
+
+  return match ? match[1] : null;
+};
 
 const LearnCourse = () => {
   const { courseId, lessonId } = useParams();
   const navigate = useNavigate();
 
+  const [course, setCourse] = useState(null);
   const [lessons, setLessons] = useState([]);
   const [currentLesson, setCurrentLesson] = useState(null);
-  const [completed, setCompleted] = useState([]);
+  const [progress, setProgress] = useState(0);
+  const [completed, setCompleted] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      const lessonsRes = await api.get(`/lessons/course/${courseId}`);
-      const progressRes = await api.get(`/progress/${courseId}`);
+      try {
+        const courseRes = await api.get(`/enroll/my-courses/${courseId}`);
+        setCourse(courseRes.data.course);
+        setProgress(courseRes.data.progress || 0);
 
-      setLessons(lessonsRes.data);
-      setCompleted(progressRes.data?.completedLessons || []);
+        const lessonsRes = await api.get(`/courses/${courseId}/lessons`);
+        setLessons(lessonsRes.data);
 
-      const lesson =
-        lessonsRes.data.find((l) => l._id === lessonId) ||
-        lessonsRes.data[0];
-
-      setCurrentLesson(lesson);
+        const active = lessonsRes.data.find((l) => l._id === lessonId);
+        setCurrentLesson(active);
+      } catch (err) {
+        console.error(err);
+        navigate("/student/my-courses");
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();
-  }, [courseId, lessonId]);
+  }, [courseId, lessonId, navigate]);
 
-  const markComplete = async () => {
-    await api.post("/progress/complete", {
-      courseId,
-      lessonId: currentLesson._id,
-    });
-
-    const currentIndex = lessons.findIndex(
-      (l) => l._id === currentLesson._id
-    );
-
-    const nextLesson = lessons[currentIndex + 1];
-
-    if (nextLesson) {
-      navigate(`/learn/${courseId}/${nextLesson._id}`);
-    }
-  };
-
-  if (!currentLesson) return <p>Loading...</p>;
+  if (loading) return <p className="p-6">Loading...</p>;
+  if (!currentLesson) return <p className="p-6">Lesson not found</p>;
 
   return (
-    <div className="flex h-screen">
+    <div className="h-screen flex bg-gray-50">
       {/* LEFT SIDEBAR */}
-      <div className="w-64 border-r p-4 space-y-2">
-        {lessons.map((l) => (
-          <div
-            key={l._id}
-            onClick={() => navigate(`/learn/${courseId}/${l._id}`)}
-            className={`cursor-pointer p-2 rounded ${
-              l._id === currentLesson._id
-                ? "bg-blue-100"
-                : ""
-            }`}
-          >
-            {l.title}
-            {completed.includes(l._id) && " ✔"}
-          </div>
-        ))}
-      </div>
+      <LearningSidebar
+        lessons={lessons}
+        activeLessonId={lessonId}
+        progress={progress}
+        onLessonClick={(id) => navigate(`/student/learn/${courseId}/${id}`)}
+      />
 
       {/* RIGHT CONTENT */}
-      <div className="flex-1 p-6 space-y-4">
-        <h1 className="text-2xl font-bold">
-          {currentLesson.title}
+      <main className="flex-1 overflow-y-auto p-8 space-y-6">
+        {/* VIDEO */}
+        <div className="aspect-video bg-black rounded-xl overflow-hidden shadow">
+          <iframe
+            src={`https://www.youtube.com/embed/${getYoutubeId(
+              currentLesson.youtubeUrl,
+            )}`}
+            title={currentLesson.title}
+            allowFullScreen
+            className="w-full h-full"
+          />
+        </div>
+
+        {/* TITLE */}
+        <h1 className="text-4xl font-bold text-gray-800 mb-2">
+          {course.title}
         </h1>
 
-        {currentLesson.videoUrl && (
-          <video
-            controls
-            src={currentLesson.videoUrl}
-            className="w-full rounded"
-          />
+        <h2 className="text-2xl font-bold">{currentLesson.title}</h2>
+
+        {/* DESCRIPTION */}
+        {currentLesson.description && (
+          <p className="text-gray-600 max-w-3xl">{currentLesson.description}</p>
         )}
 
-        <p>{currentLesson.content}</p>
-
-        <button
-          onClick={markComplete}
-          className="px-5 py-2 bg-green-600 text-white rounded"
-        >
-          Mark as Complete
-        </button>
-      </div>
+        {/* MARK AS READ */}
+        <div className="pt-4">
+          <button
+            onClick={() => setCompleted(!completed)}
+            className={`px-6 py-2 rounded-lg font-semibold transition ${
+              completed
+                ? "bg-green-600 text-white"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
+          >
+            {completed ? "Marked as Read ✓" : "Mark as Read"}
+          </button>
+        </div>
+      </main>
     </div>
   );
 };
