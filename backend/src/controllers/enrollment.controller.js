@@ -75,7 +75,49 @@ const getMyEnrollments = async (req, res) => {
   }
 };
 
+const getMyCourseDetail = async (req, res) => {
+  try {
+    // console.log("👉 getMyCourseDetail called");
+    // console.log("user:", req.user);
+    // console.log("courseId:", req.params.courseId);
+
+    const studentId = req.user.id;
+    const { courseId } = req.params;
+
+    const enrollment = await Enrollment.findOne({
+      student: studentId,
+      course: courseId,
+    }).populate("course");
+
+    // console.log("enrollment:", enrollment);
+
+    if (!enrollment || !enrollment.course) {
+      return res.status(404).json({
+        message: "Not enrolled in this course",
+      });
+    }
+
+    // 🔥 THIS IS WHERE IT LIKELY CRASHES
+    if (enrollment.course.lessons) {
+      await enrollment.course.populate("lessons");
+    }
+
+    res.status(200).json({
+      course: enrollment.course,
+      progress: enrollment.progress || 0,
+    });
+  } catch (error) {
+    console.error("❌ BACKEND CRASH:", error);
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+
+
 module.exports = {
   enrollInCourse,
   getMyEnrollments,
+  getMyCourseDetail
 };
