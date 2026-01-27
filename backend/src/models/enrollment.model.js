@@ -16,6 +16,7 @@ const enrollmentSchema = new mongoose.Schema(
     paymentStatus: {
       type: String,
       enum: ["paid", "free"],
+      default: "free",
       required: true,
     },
 
@@ -23,6 +24,13 @@ const enrollmentSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    completedLessons: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Lesson",
+  },
+],
+
   },
   { timestamps: true }
 );

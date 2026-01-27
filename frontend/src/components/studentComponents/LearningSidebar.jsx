@@ -1,14 +1,14 @@
 import { useNavigate } from "react-router-dom";
 
-
-
 const LearningSidebar = ({
   lessons,
   activeLessonId,
   onLessonClick,
   progress,
+  completedLessons = [],
 }) => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+
   return (
     <aside className="w-72 h-full bg-[#1E40AF] text-white flex flex-col">
       {/* BRAND */}
@@ -31,7 +31,10 @@ const LearningSidebar = ({
             </svg>
           </div>
 
-          <h1 className="text-lg font-semibold tracking-wide cursor-pointer"  onClick={() => navigate("/student/dashboard")}>
+          <h1
+            className="text-lg font-semibold tracking-wide cursor-pointer"
+            onClick={() => navigate("/student/dashboard")}
+          >
             SKILL<span className="text-[#60A5FA]">S</span>TACK
           </h1>
         </div>
@@ -51,25 +54,34 @@ const LearningSidebar = ({
         </div>
       </div>
 
-      {/* DIVIDER */}
       <div className="border-t border-white/10 mx-6 mb-2" />
 
-      {/* LESSONS */}
+      {/* LESSON LIST */}
       <div className="flex-1 overflow-y-auto px-2 pb-4">
-        {lessons.map((lesson, index) => (
-          <div
-            key={lesson._id}
-            onClick={() => onLessonClick(lesson._id)}
-            className={`px-4 py-3 rounded-lg text-sm cursor-pointer transition mb-1
-              ${
-                lesson._id === activeLessonId
-                  ? "bg-[#2563EB]/30 text-white font-semibold"
-                  : "text-[#BFDBFE] hover:bg-[#1E3A8A]/70"
-              }`}
-          >
-            {index + 1}. {lesson.title}
-          </div>
-        ))}
+        {lessons.map((lesson, index) => {
+          const isCompleted = completedLessons.includes(lesson._id);
+
+          return (
+            <div
+              key={lesson._id}
+              onClick={() => onLessonClick(lesson._id)}
+              className={`px-4 py-3 rounded-lg text-sm cursor-pointer transition mb-1 flex justify-between items-center
+                ${
+                  lesson._id === activeLessonId
+                    ? "bg-[#2563EB]/30 text-white font-semibold"
+                    : "text-[#BFDBFE] hover:bg-[#1E3A8A]/70"
+                }`}
+            >
+              <span>
+                {index + 1}. {lesson.title}
+              </span>
+
+              {isCompleted && (
+                <span className="text-green-400 text-xs">✓</span>
+              )}
+            </div>
+          );
+        })}
       </div>
     </aside>
   );
