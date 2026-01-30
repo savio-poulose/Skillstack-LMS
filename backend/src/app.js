@@ -13,6 +13,8 @@ const lessonRoutes = require('./routes/lesson.route.js')
 
 const paymentRoutes =  require("./routes/payment.route")
 
+const adminRoutes = require("./routes/admin.route.js")
+
 
 console.log("app.js ");
 
@@ -37,6 +39,10 @@ app.use("/api/users", userRoutes);
 app.use("/api", lessonRoutes);
 
 app.use("/api/payments",paymentRoutes);
+
+//admin
+app.use("/api/admin", adminRoutes);
+
 
 
 

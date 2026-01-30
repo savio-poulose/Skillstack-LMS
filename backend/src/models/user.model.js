@@ -41,12 +41,24 @@ const userSchema = new mongoose.Schema({
 
   role: {
     type: String,
-    enum: ["student", "teacher"],
+    enum: ["admin", "teacher", "student"],
     default: "student",
   },
+
+  isApproved: {
+    type: Boolean,
+    default: function () {
+      return this.role === "student";
+    },
+  },
+
   avatar: {
-  type: String,
-  default: ""
+    type: String,
+    default: "",
+  },
+  isBlocked: {
+  type: Boolean,
+  default: false
 }
 
 });

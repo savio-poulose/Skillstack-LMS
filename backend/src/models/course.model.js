@@ -37,13 +37,17 @@ const courseSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    
     totalLessons: {
       type: Number,
       default: 0,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 courseSchema.index({ createdBy: 1 });

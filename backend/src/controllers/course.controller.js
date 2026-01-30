@@ -2,16 +2,13 @@ const Course = require("../models/course.model");
 const uploadToCloudinary = require("../util/uploadToCloudinary");
 
 /**
- * CREATE COURSE
+ * CREATE COURSE (TEACHER ONLY)
  */
 exports.createCourse = async (req, res) => {
   try {
     if (req.user.role !== "teacher") {
       return res.status(403).json({ message: "Access denied" });
     }
-
-    console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
 
     let thumbnailUrl = "";
 
@@ -28,8 +25,8 @@ exports.createCourse = async (req, res) => {
       description: req.body.description,
       price: req.body.price,
       category: req.body.category,
-      level: req.body.level || "begginer",
-      status: req.body.status,
+      level: req.body.level || "beginner",
+      status: req.body.status || "draft",
       thumbnail: thumbnailUrl,
       createdBy: req.user.id,
     });
@@ -42,58 +39,85 @@ exports.createCourse = async (req, res) => {
 };
 
 /**
- * TEACHER COURSES
+ * GET COURSES CREATED BY LOGGED-IN TEACHER
  */
 exports.getTeacherCourses = async (req, res) => {
-  const courses = await Course.find({ createdBy: req.user.id });
-  res.json(courses);
+  try {
+    const courses = await Course.find({ createdBy: req.user.id });
+    res.json(courses);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch teacher courses" });
+  }
 };
 
 /**
- * ALL PUBLISHED COURSES
+ * GET ALL COURSES FOR STUDENTS (ONLY PUBLISHED + ACTIVE)
  */
 exports.getAllCourses = async (req, res) => {
-  const courses = await Course.find({ status: "published" })
-    .populate("createdBy", "name");
-  res.json(courses);
+  try {
+    const courses = await Course.find({
+      status: "published",
+      isActive: true,
+    }).populate("createdBy", "name");
+
+    res.json(courses);
+  } catch (error) {
+    console.error("GET ALL COURSES ERROR:", error);
+    res.status(500).json({ message: "Failed to fetch courses" });
+  }
 };
 
 /**
- * SINGLE COURSE
+ * GET SINGLE COURSE FOR STUDENT (BLOCK DISABLED COURSES)
  */
 exports.getCourseById = async (req, res) => {
-  const course = await Course.findById(req.params.id)
-    .populate("createdBy", "name email");
+  try {
+    const course = await Course.findOne({
+      _id: req.params.id,
+      isActive: true,
+    }).populate("createdBy", "name email");
 
-  if (!course) {
-    return res.status(404).json({ message: "Course not found" });
+    if (!course) {
+      return res.status(404).json({ message: "Course not available" });
+    }
+
+    res.json(course);
+  } catch (error) {
+    console.error("GET COURSE ERROR:", error);
+    res.status(500).json({ message: "Failed to fetch course" });
   }
-
-  res.json(course);
 };
 
 /**
- * DELETE COURSE
+ * DELETE COURSE (TEACHER ONLY – OWN COURSE)
  */
 exports.deleteCourse = async (req, res) => {
-  const course = await Course.findById(req.params.id);
-  if (!course) return res.status(404).json({ message: "Not found" });
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
 
-  if (course.createdBy.toString() !== req.user.id) {
-    return res.status(403).json({ message: "Not your course" });
+    if (course.createdBy.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not your course" });
+    }
+
+    await course.deleteOne();
+    res.json({ message: "Course deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete course" });
   }
-
-  await course.deleteOne();
-  res.json({ message: "Course deleted" });
 };
 
 /**
- * UPDATE COURSE
+ * UPDATE COURSE (TEACHER ONLY – OWN COURSE)
  */
 exports.updateCourse = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).json({ message: "Course not found" });
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
 
     if (course.createdBy.toString() !== req.user.id) {
       return res.status(403).json({ message: "Not your course" });
@@ -125,13 +149,13 @@ exports.updateCourse = async (req, res) => {
   }
 };
 
-
 /**
- * UPLOAD COURSE PDF
+ * UPLOAD COURSE PDF (TEACHER ONLY – OWN COURSE)
  */
 exports.uploadCoursePdf = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
+
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
@@ -161,3 +185,4 @@ exports.uploadCoursePdf = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+  

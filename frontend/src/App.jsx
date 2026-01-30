@@ -15,7 +15,6 @@ import StudentProfile from "./pages/student/StudentProfile";
 import PaymentPage from "./pages/student/Payment";
 import LearnCourse from "./pages/student/LearnCourse";
 
-
 // teacher
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import CreateCourse from "./pages/teacher/CreateCourse";
@@ -25,6 +24,9 @@ import TeacherProfile from "./pages/teacher/TeacherProfile";
 
 // admin
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import Teacher from "./pages/admin/Teachers";
+import Students from "./pages/admin/Student";
+import Courses from "./pages/admin/Courses"
 
 function App() {
   return (
@@ -82,14 +84,13 @@ function App() {
           }
         />
         <Route
-  path="/student/learn/:courseId/:lessonId"
-  element={
-    <ProtectedRoute>
-      <LearnCourse />
-    </ProtectedRoute>
-  }
-/>
-
+          path="/student/learn/:courseId/:lessonId"
+          element={
+            <ProtectedRoute>
+              <LearnCourse />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/student/profile"
@@ -152,6 +153,30 @@ function App() {
           element={
             <ProtectedRoute>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/teachers"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <Teacher />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/students"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <Students />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/courses"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <Courses />
             </ProtectedRoute>
           }
         />
