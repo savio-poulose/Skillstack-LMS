@@ -16,32 +16,14 @@ exports.getMe = async (req, res) => {
 
 exports.updateMe = async (req, res) => {
   try {
-    const { name, phone, age, gender } = req.body;
-
-    const updateData = {};
-
-    if (name) updateData.name = name;
-    if (phone) updateData.phone = phone;
-    if (age) updateData.age = age;
-    if (gender) updateData.gender = gender;
-
-    if (Object.keys(updateData).length === 0) {
-      return res.status(400).json({ message: "Nothing to update" });
-    }
-
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
-      updateData,
-      { new: true, runValidators: true }
+      req.body,
+      { new: true }
     ).select("-password");
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
 
     res.json(updatedUser);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 };
-

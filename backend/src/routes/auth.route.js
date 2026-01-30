@@ -1,30 +1,25 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const { registerUser, loginUser } = require("../controllers/auth.controllers");
-const { authMiddleware } = require("../middlewares/auth");
+const authMiddleware = require("../middlewares/auth");
+const accountStatus = require("../middlewares/accountStatus.middleware");
 
+const {
+  registerUser,
+  loginUser,
+} = require("../controllers/auth.controller");
+
+const {
+  getMe,
+  updateMe,
+} = require("../controllers/userController");
+
+// 🔓 PUBLIC ROUTES
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-// router.post("/login", loginUser);
 
-
-//checking status
-router.get("/check", authMiddleware, (req, res) => {
-  res.json({
-    loggedIn: true,
-    role: req.user.role
-  });
-});
-
-router.post("/logout", (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    sameSite: "lax",
-  });
-
-  res.status(200).json({ message: "Logged out successfully" });
-});
-
+// 🔒 PROTECTED ROUTES
+router.get("/me", authMiddleware, accountStatus, getMe);
+router.patch("/me", authMiddleware, accountStatus, updateMe);
 
 module.exports = router;

@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import api from "../../api";
+// import api from "../../api";
 
 const TeacherSidebar = () => {
   const linkClass = ({ isActive }) =>
@@ -13,17 +13,15 @@ const TeacherSidebar = () => {
     }
   `;
 
+  // const navigate = useNavigate();
+
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    try {
-      await api.post("/auth/logout");
-      navigate("/landing");
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
-  };
-
+  const handleLogout = () => {
+  localStorage.removeItem("token");
+  navigate("/landing", { replace: true });
+  window.location.reload();
+};
   return (
     <aside className="w-64 h-screen bg-[#1E40AF] text-white flex flex-col">
       {/* BRAND */}

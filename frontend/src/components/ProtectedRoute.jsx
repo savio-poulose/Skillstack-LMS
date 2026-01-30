@@ -1,22 +1,39 @@
-import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import api from "../api";
 
-function ProtectedRoute({ children }) {
+const ProtectedRoute = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
-    api.get("/auth/check")
-      .then(() => setAuthorized(true))
-      .catch(() => setAuthorized(false))
-      .finally(() => setLoading(false));
+    const token = localStorage.getItem("token");
+
+    // 🔥 QUICK EXIT (prevents useless API call)
+    if (!token) {
+      setAuthorized(false);
+      setLoading(false);
+      return;
+    }
+
+    const checkAuth = async () => {
+      try {
+        await api.get("/auth/me"); // token is now attached
+        setAuthorized(true);
+      } catch (err) {
+        setAuthorized(false);
+        console.log(err)
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
   }, []);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return null;
 
   return authorized ? children : <Navigate to="/login" />;
-}
+};
 
 export default ProtectedRoute;
-  

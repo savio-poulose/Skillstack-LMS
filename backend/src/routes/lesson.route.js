@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { authMiddleware } = require("../middlewares/auth");
+const authMiddleware = require("../middlewares/auth");
 
 const {
   createLesson,
@@ -16,7 +16,6 @@ router.post(
   authMiddleware,
   createLesson
 );
-
 
 // Get lessons of a course
 router.get(

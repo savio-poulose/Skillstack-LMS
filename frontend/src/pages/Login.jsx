@@ -15,10 +15,9 @@ function Login() {
 
   // ✨ you will fill this logic!
   const handleLogin = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    //validation
-    if (!email.trim()) return toast.error("Email is required");
+  if (!email.trim()) return toast.error("Email is required");
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) return toast.error("Enter a valid email");
@@ -27,23 +26,24 @@ function Login() {
 
   setLoading(true);
 
-    try{
-       const res = await api.post("/auth/login", { email, password });
+  try {
+    const res = await api.post("/auth/login", { email, password });
 
+    // 🔥 THIS WAS MISSING
+    localStorage.setItem("token", res.data.token);
 
-        const role = res.data.user.role;
+    const role = res.data.user.role;
 
-        if(role == 'student') navigate("/student/dashboard")
-        if(role == 'teacher') navigate("/teacher/dashboard")
-        if(role == 'admin') navigate("/admin/dashboard")
-    }
-    catch(error){
-         toast.error(error.response?.data?.message || "Invalid login details");
-    }
-    finally{
-        setLoading(false);
-    }
-  };
+    if (role === "student") navigate("/student/dashboard");
+    if (role === "teacher") navigate("/teacher/dashboard");
+    if (role === "admin") navigate("/admin/dashboard");
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Invalid login details");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-50 via-white to-blue-100

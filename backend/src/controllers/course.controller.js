@@ -4,14 +4,13 @@ const uploadToCloudinary = require("../util/uploadToCloudinary");
 /**
  * CREATE COURSE (TEACHER ONLY)
  */
+// const Course = require("../models/course.model");
+
 exports.createCourse = async (req, res) => {
   try {
-    if (req.user.role !== "teacher") {
-      return res.status(403).json({ message: "Access denied" });
-    }
+    let thumbnailUrl = null;
 
-    let thumbnailUrl = "";
-
+    // 🔥 UPLOAD THUMBNAIL
     if (req.file) {
       const result = await uploadToCloudinary(
         req.file.buffer,
@@ -25,18 +24,20 @@ exports.createCourse = async (req, res) => {
       description: req.body.description,
       price: req.body.price,
       category: req.body.category,
-      level: req.body.level || "beginner",
-      status: req.body.status || "draft",
-      thumbnail: thumbnailUrl,
+      level: req.body.level,
+      status: req.body.status,
+      thumbnail: thumbnailUrl, // ✅ THIS WAS MISSING
       createdBy: req.user.id,
     });
 
     res.status(201).json(course);
-  } catch (error) {
-    console.error("CREATE COURSE ERROR:", error);
-    res.status(400).json({ message: error.message });
+  } catch (err) {
+    console.error("CREATE COURSE ERROR:", err);
+    res.status(500).json({ message: "Failed to create course" });
   }
 };
+
+
 
 /**
  * GET COURSES CREATED BY LOGGED-IN TEACHER

@@ -2,7 +2,8 @@ const express = require("express");
 const upload = require("../middlewares/multer");
 const cloudinary = require("../config/cloudinary");
 const User = require("../models/user.model");
-const { authMiddleware } = require("../middlewares/auth");
+const authMiddleware = require("../middlewares/auth");
+
 
 const router = express.Router();
 

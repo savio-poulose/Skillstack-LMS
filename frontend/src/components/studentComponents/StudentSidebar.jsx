@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import api from "../../api";
+// import api from "../../api";
 
 const StudentSidebar = () => {
   const linkClass = ({ isActive }) =>
@@ -15,14 +15,11 @@ const StudentSidebar = () => {
 
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    try {
-      await api.post("/auth/logout");
-      navigate("/landing");
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
-  };
+  const handleLogout = () => {
+  localStorage.removeItem("token");
+  navigate("/landing", { replace: true });
+  window.location.reload();
+};
 
   return (
     <aside className="w-64 h-screen bg-[#1E40AF] text-white flex flex-col">
@@ -62,7 +59,7 @@ const StudentSidebar = () => {
         </NavLink>
 
         <NavLink to="/student/my-courses" className={linkClass}>
-          My Courses
+          My Enrollments
         </NavLink>
 
         <NavLink to="/student/mentor" className={linkClass}>
