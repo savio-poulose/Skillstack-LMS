@@ -1,27 +1,47 @@
 import { useEffect, useState } from "react";
 import api from "../../api";
 import AdminSidebar from "../../components/adminComponents/AdminSidebar";
-import AdminHeader from "../../components/adminComponents/AdminHeader"
+import AdminHeader from "../../components/adminComponents/AdminHeader";
+
 const Courses = () => {
   const [courses, setCourses] = useState([]);
 
-  const fetchCourses = async () => {
-  try {
-    const res = await api.get("/admin/courses");
-    setCourses(res.data);
-  } catch (error) {
-    console.error("FETCH COURSES ERROR:", error.response?.data || error.message);
-  }
-};
-
-
   useEffect(() => {
+    let isMounted = true;
+
+    const fetchCourses = async () => {
+      try {
+        const res = await api.get("/admin/courses");
+        if (isMounted) {
+          setCourses(res.data);
+        }
+      } catch (error) {
+        console.error(
+          "FETCH COURSES ERROR:",
+          error.response?.data || error.message
+        );
+      }
+    };
+
     fetchCourses();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const toggleCourse = async (id, isActive) => {
-    await api.patch(`/admin/courses/${id}`, { isActive });
-    fetchCourses();
+    try {
+      await api.patch(`/admin/courses/${id}`, { isActive });
+
+      const res = await api.get("/admin/courses");
+      setCourses(res.data);
+    } catch (error) {
+      console.error(
+        "TOGGLE COURSE ERROR:",
+        error.response?.data || error.message
+      );
+    }
   };
 
   return (
@@ -47,9 +67,11 @@ const Courses = () => {
                 {courses.map((c) => (
                   <tr key={c._id} className="border-t">
                     <td className="px-6 py-4">{c.title}</td>
+
                     <td className="px-6 py-4">
-                      {c.teacher?.name}
+                      {c.teacher?.name || "—"}
                     </td>
+
                     <td className="px-6 py-4">
                       {c.isActive ? (
                         <span className="text-green-600">Active</span>
@@ -57,6 +79,7 @@ const Courses = () => {
                         <span className="text-red-600">Disabled</span>
                       )}
                     </td>
+
                     <td className="px-6 py-4">
                       {c.isActive ? (
                         <button
@@ -76,6 +99,17 @@ const Courses = () => {
                     </td>
                   </tr>
                 ))}
+
+                {courses.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan="4"
+                      className="px-6 py-6 text-center text-gray-500"
+                    >
+                      No courses found
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
