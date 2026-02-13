@@ -23,28 +23,44 @@ const CourseEditor = () => {
     description: "",
   });
 
-  // PDF state
+  // PDF
   const [pdfFile, setPdfFile] = useState(null);
   const [uploadingPdf, setUploadingPdf] = useState(false);
 
-  // FETCH LESSONS
+  // QUIZ
+  const [quizGenerating, setQuizGenerating] = useState(false);
+  const [quizEnabled, setQuizEnabled] = useState(false);
+
+
   useEffect(() => {
-    const fetchLessons = async () => {
+  const fetchData = async () => {
+    try {
+      // fetch lessons
+      const lessonRes = await api.get(`/courses/${courseId}/lessons`);
+      setLessons(lessonRes.data);
+      if (lessonRes.data.length > 0) {
+        setSelectedLesson(lessonRes.data[0]);
+      }
+
+      // check if quiz exists
       try {
-        const res = await api.get(`/courses/${courseId}/lessons`);
-        setLessons(res.data);
-        if (res.data.length > 0) {
-          setSelectedLesson(res.data[0]);
+        const quizRes = await api.get(`/courses/${courseId}/quiz`);
+        if (quizRes.data) {
+          setQuizEnabled(true);
         }
       } catch {
-        toast.error("Failed to load lessons");
-      } finally {
-        setLoading(false);
+        setQuizEnabled(false);
       }
-    };
-    fetchLessons();
-  }, [courseId]);
 
+    } catch {
+      toast.error("Failed to load data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, [courseId]);
   // CREATE LESSON
   const handleCreateLesson = async () => {
     if (!formData.title || !formData.youtubeUrl) {
@@ -60,11 +76,10 @@ const CourseEditor = () => {
 
       setLessons((prev) => [...prev, res.data]);
       setSelectedLesson(res.data);
-
       setFormData({ title: "", youtubeUrl: "", description: "" });
       setIsCreating(false);
 
-      toast.success("Lesson created successfully");
+      toast.success("Lesson created");
     } catch {
       toast.error("Failed to create lesson");
     }
@@ -87,7 +102,7 @@ const CourseEditor = () => {
       setSelectedLesson(res.data);
       setIsEditing(false);
 
-      toast.success("Lesson updated successfully");
+      toast.success("Lesson updated");
     } catch {
       toast.error("Failed to update lesson");
     }
@@ -95,13 +110,7 @@ const CourseEditor = () => {
 
   // DELETE LESSON
   const handleDeleteLesson = async () => {
-    if (!selectedLesson) return;
-
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this lesson?"
-    );
-
-    if (!confirmed) return;
+    if (!window.confirm("Delete this lesson?")) return;
 
     try {
       await api.delete(`/lessons/${selectedLesson._id}`);
@@ -113,7 +122,7 @@ const CourseEditor = () => {
       setSelectedLesson(null);
       setIsEditing(false);
 
-      toast.success("Lesson deleted successfully");
+      toast.success("Lesson deleted");
     } catch {
       toast.error("Failed to delete lesson");
     }
@@ -122,21 +131,18 @@ const CourseEditor = () => {
   // UPLOAD PDF
   const handlePdfUpload = async () => {
     if (!pdfFile) {
-      toast.error("Please select a PDF");
+      toast.error("Select a PDF first");
       return;
     }
 
     try {
       setUploadingPdf(true);
-
       const form = new FormData();
       form.append("pdf", pdfFile);
 
-      await api.put(`/courses/${courseId}/pdf`, form, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      await api.put(`/courses/${courseId}/pdf`, form);
 
-      toast.success("PDF uploaded successfully");
+      toast.success("PDF uploaded");
       setPdfFile(null);
     } catch {
       toast.error("Failed to upload PDF");
@@ -145,17 +151,35 @@ const CourseEditor = () => {
     }
   };
 
-  // DELETE COURSE
-  const handleDeleteCourse = async () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this course? This action cannot be undone."
+  // ENABLE QUIZ (AI)
+  const handleEnableQuiz = async () => {
+  try {
+    setQuizGenerating(true);
+
+    const res = await api.post(
+      `/courses/${courseId}/quiz/ai-generate`
     );
 
-    if (!confirmed) return;
+    if (res.data) {
+      setQuizEnabled(true);
+    }
+
+    toast.success("Quiz generated successfully");
+
+  } catch {
+    toast.error("Failed to generate quiz");
+  } finally {
+    setQuizGenerating(false);
+  }
+};  
+
+  // DELETE COURSE
+  const handleDeleteCourse = async () => {
+    if (!window.confirm("Delete this course permanently?")) return;
 
     try {
       await api.delete(`/courses/${courseId}`);
-      toast.success("Course deleted successfully");
+      toast.success("Course deleted");
       navigate("/teacher/my-courses");
     } catch {
       toast.error("Failed to delete course");
@@ -175,28 +199,41 @@ const CourseEditor = () => {
             <div className="p-4 border-b">
               <h2 className="text-lg font-semibold">Course Content</h2>
               <p className="text-sm text-gray-500">
-                {lessons.length} lesson{lessons.length !== 1 ? "s" : ""}
+                {lessons.length} lessons
               </p>
             </div>
 
             <div className="p-4 space-y-4">
-              {/* PDF UPLOAD */}
+              {/* PDF */}
               <div className="border rounded-lg p-3 space-y-2">
                 <p className="text-sm font-medium">Course PDF</p>
-
                 <input
                   type="file"
                   accept="application/pdf"
                   onChange={(e) => setPdfFile(e.target.files[0])}
-                  className="text-sm"
                 />
-
                 <button
                   onClick={handlePdfUpload}
                   disabled={uploadingPdf}
                   className="w-full text-sm py-1 border rounded-lg"
                 >
                   {uploadingPdf ? "Uploading..." : "Upload PDF"}
+                </button>
+              </div>
+
+              {/* QUIZ */}
+              <div className="border rounded-lg p-3 space-y-2">
+                <p className="text-sm font-medium">Quiz</p>
+                <button
+                  onClick={handleEnableQuiz}
+                  disabled={quizGenerating || quizEnabled}
+                  className="w-full text-sm py-1 border rounded-lg disabled:opacity-50"
+                >
+                  {quizGenerating
+                    ? "Generating quiz..."
+                    : quizEnabled
+                    ? "Quiz Enabled"
+                    : "Enable Quiz (AI)"}
                 </button>
               </div>
 
@@ -219,7 +256,6 @@ const CourseEditor = () => {
 
             <ul className="px-4 pb-4 space-y-2 text-sm flex-1">
               {loading && <p>Loading...</p>}
-
               {!loading &&
                 lessons.map((lesson, index) => (
                   <li
@@ -245,11 +281,10 @@ const CourseEditor = () => {
                 ))}
             </ul>
 
-            {/* DELETE COURSE */}
             <div className="p-4 border-t">
               <button
                 onClick={handleDeleteCourse}
-                className="w-full py-2 text-sm rounded-lg bg-red-500 text-white hover:bg-red-700"
+                className="w-full py-2 text-sm rounded-lg bg-red-500 text-white"
               >
                 Delete Course
               </button>
@@ -258,11 +293,10 @@ const CourseEditor = () => {
 
           {/* RIGHT PANEL */}
           <main className="flex-1 p-6 overflow-y-auto">
-            {/* CREATE MODE */}
+            {/* CREATE */}
             {isCreating && (
               <div className="max-w-3xl space-y-4">
                 <h2 className="text-xl font-semibold">Add Lesson</h2>
-
                 <input
                   placeholder="Lesson title"
                   value={formData.title}
@@ -271,7 +305,6 @@ const CourseEditor = () => {
                   }
                   className="w-full border px-3 py-2 rounded"
                 />
-
                 <input
                   placeholder="YouTube URL"
                   value={formData.youtubeUrl}
@@ -283,7 +316,6 @@ const CourseEditor = () => {
                   }
                   className="w-full border px-3 py-2 rounded"
                 />
-
                 <textarea
                   rows="4"
                   placeholder="Description"
@@ -296,7 +328,6 @@ const CourseEditor = () => {
                   }
                   className="w-full border px-3 py-2 rounded"
                 />
-
                 <button
                   onClick={handleCreateLesson}
                   className="bg-blue-600 text-white px-4 py-2 rounded"
@@ -306,11 +337,10 @@ const CourseEditor = () => {
               </div>
             )}
 
-            {/* EDIT MODE */}
+            {/* EDIT */}
             {isEditing && selectedLesson && (
               <div className="max-w-3xl space-y-4">
                 <h2 className="text-xl font-semibold">Edit Lesson</h2>
-
                 <input
                   value={formData.title}
                   onChange={(e) =>
@@ -318,7 +348,6 @@ const CourseEditor = () => {
                   }
                   className="w-full border px-3 py-2 rounded"
                 />
-
                 <input
                   value={formData.youtubeUrl}
                   onChange={(e) =>
@@ -329,7 +358,6 @@ const CourseEditor = () => {
                   }
                   className="w-full border px-3 py-2 rounded"
                 />
-
                 <textarea
                   rows="4"
                   value={formData.description}
@@ -349,14 +377,12 @@ const CourseEditor = () => {
                   >
                     Save Changes
                   </button>
-
                   <button
                     onClick={handleDeleteLesson}
                     className="bg-red-500 text-white px-4 py-2 rounded"
                   >
                     Delete Lesson
                   </button>
-
                   <button
                     onClick={() => setIsEditing(false)}
                     className="border px-4 py-2 rounded"
@@ -367,7 +393,7 @@ const CourseEditor = () => {
               </div>
             )}
 
-            {/* VIEW MODE */}
+            {/* VIEW */}
             {!isCreating && !isEditing && selectedLesson && (
               <div className="max-w-3xl space-y-4">
                 <div className="flex justify-between items-center">
@@ -387,7 +413,6 @@ const CourseEditor = () => {
                   disabled
                   className="w-full border px-3 py-2 bg-gray-100 rounded"
                 />
-
                 <textarea
                   rows="4"
                   value={selectedLesson.description || ""}

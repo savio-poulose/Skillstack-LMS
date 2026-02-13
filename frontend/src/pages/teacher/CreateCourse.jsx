@@ -35,9 +35,9 @@ const CreateCourse = () => {
       const data = new FormData();
       data.append("title", formData.title);
       data.append("description", formData.description);
-      data.append("price", Number(formData.price));
+      data.append("price", Number(formData.price || 0));
       data.append("category", formData.category);
-      data.append("level", formData.level); 
+      data.append("level", formData.level);
       data.append("status", formData.status);
 
       if (thumbnail) {
@@ -48,16 +48,21 @@ const CreateCourse = () => {
 
       toast.success("Course created successfully");
 
-      const courseId = res.data._id;
-      navigate(`/teacher/courses/${courseId}/editor`);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to create course");
+      navigate(`/teacher/courses/${res.data._id}/editor`);
+    } catch (err) {
+      console.error(err);
+
+      if (err.response?.status === 403) {
+        toast.error(
+          "Your teacher account is pending admin approval"
+        );
+      } else {
+        toast.error("Failed to create course");
+      }
     } finally {
       setLoading(false);
     }
   };
- 
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -156,7 +161,6 @@ const CreateCourse = () => {
                     </select>
                   </div>
 
-                  {/* ✅ LEVEL SELECTOR */}
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       Course Level
