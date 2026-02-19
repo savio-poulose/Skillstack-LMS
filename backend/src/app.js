@@ -15,10 +15,8 @@ const paymentRoutes = require("./routes/payment.route")
 
 const adminRoutes = require("./routes/admin.route.js")
 const quizRoutes = require("./routes/quiz.route");
-<<<<<<< HEAD
-=======
+
 const chatRoutes = require("./routes/chat.route");
->>>>>>> 46684f7 (the quiz is done working on chat)
 
 
 console.log("app.js ");
@@ -53,12 +51,9 @@ app.use("/api/admin", adminRoutes);
 
 app.use("/api", quizRoutes);
 
-<<<<<<< HEAD
-=======
+
 //chat routes
 app.use("/api",chatRoutes);
-
->>>>>>> 46684f7 (the quiz is done working on chat)
 
 
 

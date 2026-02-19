@@ -18,6 +18,7 @@ import LearnCourse from "./pages/student/LearnCourse";
 import MyQuizzes from "./pages/student/MyQuizzes";
 import QuizInterface from "./pages/student/QuizInterface";
 import ChatTeacherList from "./pages/student/ChatTeacherList";
+import ChatWindow from "./pages/student/ChatWindow";
 
 // teacher
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
@@ -25,12 +26,14 @@ import CreateCourse from "./pages/teacher/CreateCourse";
 import CourseEditor from "./pages/teacher/CourseEditor";
 import TeacherCourses from "./pages/teacher/MyCourses";
 import TeacherProfile from "./pages/teacher/TeacherProfile";
+import ChatStudentList from "./pages/teacher/ChatStudentList";
+import TeacherChatWindow from "./pages/teacher/TeacherChatWindow";
 
 // admin
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import Teacher from "./pages/admin/Teachers";
 import Students from "./pages/admin/Student";
-import Courses from "./pages/admin/Courses"
+import Courses from "./pages/admin/Courses";
 
 function App() {
   return (
@@ -123,10 +126,18 @@ function App() {
           }
         />
         <Route
-          path="/student/mentor"
+          path="/student/chatList"
           element={
             <ProtectedRoute>
               <ChatTeacherList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/chat/:teacherId"
+          element={
+            <ProtectedRoute>
+              <ChatWindow />
             </ProtectedRoute>
           }
         />
@@ -173,6 +184,23 @@ function App() {
           element={
             <ProtectedRoute>
               <TeacherProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher/chatList"
+          element={
+            <ProtectedRoute>
+              <ChatStudentList />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/teacher/chat/:studentId"
+          element={
+            <ProtectedRoute>
+              <TeacherChatWindow />
             </ProtectedRoute>
           }
         />

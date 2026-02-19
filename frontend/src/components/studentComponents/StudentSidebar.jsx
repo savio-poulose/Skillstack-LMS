@@ -65,7 +65,7 @@ const StudentSidebar = () => {
           My Quizzes
         </NavLink>
 
-        <NavLink to="/student/mentor" className={linkClass}>
+        <NavLink to="/student/chatList" className={linkClass}>
           Talk to Mentor
         </NavLink>
 

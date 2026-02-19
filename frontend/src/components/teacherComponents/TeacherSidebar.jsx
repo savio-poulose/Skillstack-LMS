@@ -67,7 +67,7 @@ const TeacherSidebar = () => {
           Create courses
         </NavLink>
 
-        <NavLink to="/teacher/mentor" className={linkClass}>
+        <NavLink to="/teacher/chatList" className={linkClass}>
           Talk to student
         </NavLink>
 

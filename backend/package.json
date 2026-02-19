@@ -9,25 +9,21 @@
   "author": "savio poulose",
   "license": "ISC",
   "dependencies": {
-    "@google/genai": "^1.41.0",
-    "axios": "^1.13.4",
-    "bcrypt": "^6.0.0",
-    "cloudinary": "^2.8.0",
-    "cookie-parser": "^1.4.7",
-    "cors": "^2.8.5",
-    "cros": "^1.1.0",
-    "dotenv": "^17.2.3",
-    "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.0.0",
-    "multer": "^2.0.2",
-    "node-fetch": "^2.7.0",
-    "openai": "^6.18.0",
-<<<<<<< HEAD
-    "pdf-parse": "^2.4.5"
-=======
-    "pdf-parse": "^2.4.5",
-    "socket.io": "^4.8.3"
->>>>>>> 46684f7 (the quiz is done working on chat)
-  }
+  "@google/genai": "^1.41.0",
+  "axios": "^1.13.4",
+  "bcrypt": "^6.0.0",
+  "cloudinary": "^2.8.0",
+  "cookie-parser": "^1.4.7",
+  "cors": "^2.8.5",
+  "cros": "^1.1.0",
+  "dotenv": "^17.2.3",
+  "express": "^5.2.1",
+  "jsonwebtoken": "^9.0.3",
+  "mongoose": "^9.0.0",
+  "multer": "^2.0.2",
+  "node-fetch": "^2.7.0",
+  "openai": "^6.18.0",
+  "pdf-parse": "^2.4.5",
+  "socket.io": "^4.8.3"
+}
 }

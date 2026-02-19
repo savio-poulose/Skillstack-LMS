@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../../api";
+import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
+import { useRef } from "react";
+
 
 import StudentSidebar from "../../components/studentComponents/StudentSidebar";
 import StudentHeader from "../../components/studentComponents/StudentHeader";
@@ -7,6 +11,8 @@ import StudentHeader from "../../components/studentComponents/StudentHeader";
 const ChatTeacherList = () => {
   const [user, setUser] = useState(null);
   const [teachers, setTeachers] = useState([]);
+  const navigate = useNavigate();
+  const socketRef = useRef(null);
 
   // fetch user (for header)
   useEffect(() => {
@@ -36,6 +42,32 @@ const ChatTeacherList = () => {
     fetchTeachers();
   }, []);
 
+  //sokcet io something
+  useEffect(() => {
+  if (!user) return;
+
+  socketRef.current = io("http://localhost:5000", {
+    auth: {
+      token: localStorage.getItem("token"),
+    },
+  });
+
+  socketRef.current.on("newMessage", (message) => {
+    // Only update unread if I'm NOT inside that chat
+    setTeachers((prev) =>
+      prev.map((teacher) =>
+        teacher._id === message.sender
+          ? { ...teacher, unread: teacher.unread + 1 }
+          : teacher
+      )
+    );
+  });
+
+  return () => {
+    socketRef.current.disconnect();
+  };
+}, [user]);
+
   return (
     <div className="flex h-screen overflow-hidden">
       <StudentSidebar />
@@ -50,7 +82,8 @@ const ChatTeacherList = () => {
               {teachers.map((teacher) => (
                 <div
                   key={teacher._id}
-                  className="bg-white shadow rounded-lg p-4 flex items-center justify-between"
+                  onClick={() => navigate(`/student/chat/${teacher._id}`)}
+                  className="bg-white cursor-pointer hover:bg-gray-100 shadow rounded-lg p-4 flex items-center justify-between"
                 >
                   <div className="flex items-center gap-4">
                     <img

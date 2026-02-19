@@ -1,45 +1,3 @@
-<<<<<<< HEAD
-const { generateQuizFromGemini } = require("../services/gemini.service");
-const Quiz = require("../models/quiz.model");
-const Course = require("../models/course.model");
-
-exports.generateQuizWithAI = async (req, res) => {
-  try {
-    const { courseId } = req.params;
-
-    // 1️⃣ Get course
-    const course = await Course.findById(courseId);
-    if (!course) {
-      return res.status(404).json({ message: "Course not found" });
-    }
-
-    // 2️⃣ Check if quiz already exists (important because unique: true)
-    const existingQuiz = await Quiz.findOne({ courseId });
-    if (existingQuiz) {
-      return res.status(400).json({ message: "Quiz already generated" });
-    }
-
-    // 3️⃣ Call Gemini
-    const aiResponse = await generateQuizFromGemini(course);
-
-    // 4️⃣ Validate AI response
-    const isValid = aiResponse.every(q =>
-      q.question &&
-      Array.isArray(q.options) &&
-      q.options.length === 4 &&
-      q.correctIndex >= 0 &&
-      q.correctIndex <= 3
-    );
-
-    if (!isValid) {
-      return res.status(400).json({ message: "Invalid AI response format" });
-    }
-
-    // 5️⃣ Save quiz
-    const quiz = await Quiz.create({
-      courseId,
-      questions: aiResponse,
-=======
 const Course = require("../models/course.model");
 const Quiz = require("../models/quiz.model");
 const Enrollment = require("../models/enrollment.model");
@@ -71,19 +29,10 @@ const generateQuiz = async (req, res) => {
     const quiz = await Quiz.create({
       courseId,
       questions: aiQuestions,
->>>>>>> 46684f7 (the quiz is done working on chat)
       perQuestionTime: 30,
       source: "ai",
     });
 
-<<<<<<< HEAD
-    res.status(201).json(quiz);
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Quiz generation failed" });
-  }
-=======
     res.json(quiz);
   } catch (err) {
     console.error(err);
@@ -108,9 +57,6 @@ const getQuizByCourse = async (req, res) => {
   }
 };
 
-/**
- * Get quizzes for courses the student has completed (progress >= 100)
- */
 const getAvailableQuizzes = async (req, res) => {
   try {
     const enrollments = await Enrollment.find({
@@ -128,7 +74,6 @@ const getAvailableQuizzes = async (req, res) => {
       courseId: { $in: completedCourseIds },
     });
 
-    // Fetch all attempts for this student across applicable quizzes
     const quizIds = quizzes.map((q) => q._id);
     const attempts = await QuizAttempt.find({
       studentId: req.user.id,
@@ -149,7 +94,6 @@ const getAvailableQuizzes = async (req, res) => {
         courseId: quiz.courseId,
         questionsCount: quiz.questions.length,
         perQuestionTime: quiz.perQuestionTime,
-        // attempt info (null if not yet attempted)
         attempted: !!attempt,
         bestScore: attempt ? attempt.score : null,
         bestPercentage: attempt ? attempt.percentage : null,
@@ -163,9 +107,6 @@ const getAvailableQuizzes = async (req, res) => {
   }
 };
 
-/**
- * Get a specific quiz for a student (verifying completion)
- */
 const getStudentQuiz = async (req, res) => {
   try {
     const { quizId } = req.params;
@@ -175,7 +116,6 @@ const getStudentQuiz = async (req, res) => {
       return res.status(404).json({ message: "Quiz not found" });
     }
 
-    // Verify student completed the course
     const enrollment = await Enrollment.findOne({
       student: req.user.id,
       course: quiz.courseId,
@@ -195,15 +135,10 @@ const getStudentQuiz = async (req, res) => {
   }
 };
 
-/**
- * Submit quiz answers and save score to DB
- * POST /api/student/quiz/:quizId/submit
- * Body: { answers: [{ questionIndex, selectedIndex }] }
- */
 const submitQuiz = async (req, res) => {
   try {
     const { quizId } = req.params;
-    const { answers } = req.body; // [{ questionIndex, selectedIndex }]
+    const { answers } = req.body;
 
     if (!answers || !Array.isArray(answers)) {
       return res.status(400).json({ message: "Answers array is required" });
@@ -212,7 +147,6 @@ const submitQuiz = async (req, res) => {
     const quiz = await Quiz.findById(quizId);
     if (!quiz) return res.status(404).json({ message: "Quiz not found" });
 
-    // Verify completion gate
     const enrollment = await Enrollment.findOne({
       student: req.user.id,
       course: quiz.courseId,
@@ -225,7 +159,6 @@ const submitQuiz = async (req, res) => {
         .json({ message: "You have not completed this course yet." });
     }
 
-    // Grade the answers
     let score = 0;
     const gradedAnswers = answers.map((ans) => {
       const question = quiz.questions[ans.questionIndex];
@@ -242,7 +175,6 @@ const submitQuiz = async (req, res) => {
     const total = quiz.questions.length;
     const percentage = Math.round((score / total) * 100);
 
-    // Upsert — keeps latest attempt (allows retakes)
     const attempt = await QuizAttempt.findOneAndUpdate(
       { quizId, studentId: req.user.id },
       {
@@ -262,10 +194,6 @@ const submitQuiz = async (req, res) => {
   }
 };
 
-/**
- * Get existing attempt for a student on a specific quiz
- * GET /api/student/quiz/:quizId/attempt
- */
 const getMyAttempt = async (req, res) => {
   try {
     const { quizId } = req.params;
@@ -288,5 +216,4 @@ module.exports = {
   getStudentQuiz,
   submitQuiz,
   getMyAttempt,
->>>>>>> 46684f7 (the quiz is done working on chat)
 };
