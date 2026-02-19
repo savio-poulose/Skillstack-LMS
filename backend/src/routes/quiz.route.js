@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+<<<<<<< HEAD
 
 const Course = require("../models/course.model");
 const Quiz = require("../models/quiz.model");
@@ -75,6 +76,59 @@ router.get(
       res.status(500).json({ message: "Failed to fetch quiz" });
     }
   }
+=======
+const authMiddleware = require("../middlewares/auth");
+const {
+  generateQuiz,
+  getQuizByCourse,
+  getAvailableQuizzes,
+  getStudentQuiz,
+  submitQuiz,
+  getMyAttempt,
+} = require("../controllers/quiz.controller");
+
+// Teacher generates quiz
+router.post(
+  "/courses/:id/quiz/ai-generate",
+  authMiddleware,
+  generateQuiz
+);
+
+// Get quiz by course ID (General use / Teacher view)
+router.get(
+  "/courses/:id/quiz",
+  authMiddleware,
+  getQuizByCourse
+);
+
+// STUDENT ROUTES
+// Get all quizzes available for the student (based on completed courses)
+router.get(
+  "/student/quizzes/available",
+  authMiddleware,
+  getAvailableQuizzes
+);
+
+// Get a specific quiz for taking (verifies completion)
+router.get(
+  "/student/quiz/:quizId",
+  authMiddleware,
+  getStudentQuiz
+);
+
+// Submit quiz answers → calculate & save score
+router.post(
+  "/student/quiz/:quizId/submit",
+  authMiddleware,
+  submitQuiz
+);
+
+// Get existing attempt for current student on a quiz
+router.get(
+  "/student/quiz/:quizId/attempt",
+  authMiddleware,
+  getMyAttempt
+>>>>>>> 46684f7 (the quiz is done working on chat)
 );
 
 module.exports = router;

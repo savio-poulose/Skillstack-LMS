@@ -6,20 +6,19 @@ const StudentSidebar = () => {
   const linkClass = ({ isActive }) =>
     `
     relative flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-all
-    ${
-      isActive
-        ? "bg-[#2563EB]/20 text-white before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r before:bg-[#2563EB]"
-        : "text-[#60A5FA] hover:bg-[#1E3A8A]/60 hover:text-white"
+    ${isActive
+      ? "bg-[#2563EB]/20 text-white before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r before:bg-[#2563EB]"
+      : "text-[#60A5FA] hover:bg-[#1E3A8A]/60 hover:text-white"
     }
   `;
 
   const navigate = useNavigate();
 
   const handleLogout = () => {
-  localStorage.removeItem("token");
-  navigate("/landing", { replace: true });
-  window.location.reload();
-};
+    localStorage.removeItem("token");
+    navigate("/landing", { replace: true });
+    window.location.reload();
+  };
 
   return (
     <aside className="w-64 h-screen bg-[#1E40AF] text-white flex flex-col">
@@ -60,6 +59,10 @@ const StudentSidebar = () => {
 
         <NavLink to="/student/my-courses" className={linkClass}>
           My Enrollments
+        </NavLink>
+
+        <NavLink to="/student/quizzes" className={linkClass}>
+          My Quizzes
         </NavLink>
 
         <NavLink to="/student/mentor" className={linkClass}>

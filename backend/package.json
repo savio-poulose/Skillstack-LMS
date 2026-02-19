@@ -23,6 +23,11 @@
     "multer": "^2.0.2",
     "node-fetch": "^2.7.0",
     "openai": "^6.18.0",
+<<<<<<< HEAD
     "pdf-parse": "^2.4.5"
+=======
+    "pdf-parse": "^2.4.5",
+    "socket.io": "^4.8.3"
+>>>>>>> 46684f7 (the quiz is done working on chat)
   }
 }

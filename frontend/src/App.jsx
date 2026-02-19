@@ -13,7 +13,11 @@ import MyCourses from "./pages/student/MyCourses";
 import MyCourseDetail from "./pages/student/MyCourseDetails";
 import StudentProfile from "./pages/student/StudentProfile";
 import PaymentPage from "./pages/student/Payment";
+
 import LearnCourse from "./pages/student/LearnCourse";
+import MyQuizzes from "./pages/student/MyQuizzes";
+import QuizInterface from "./pages/student/QuizInterface";
+import ChatTeacherList from "./pages/student/ChatTeacherList";
 
 // teacher
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
@@ -97,6 +101,32 @@ function App() {
           element={
             <ProtectedRoute>
               <StudentProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/quizzes"
+          element={
+            <ProtectedRoute>
+              <MyQuizzes />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/quiz/:quizId"
+          element={
+            <ProtectedRoute>
+              <QuizInterface />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/mentor"
+          element={
+            <ProtectedRoute>
+              <ChatTeacherList />
             </ProtectedRoute>
           }
         />
