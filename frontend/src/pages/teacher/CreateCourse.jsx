@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api";
 import toast from "react-hot-toast";
@@ -8,6 +8,7 @@ import TeacherHeader from "../../components/teacherComponents/TeacherHeader";
 
 const CreateCourse = () => {
   const navigate = useNavigate();
+  const [user,setUser] = useState(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -64,12 +65,26 @@ const CreateCourse = () => {
     }
   };
 
+  //fetching users
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await api.get("/users/me"); 
+        setUser(res.data);
+      } catch (error) {
+        console.error("Error fetching teacher", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
   return (
     <div className="flex h-screen overflow-hidden">
       <TeacherSidebar />
 
       <div className="flex flex-col flex-1 overflow-hidden bg-gray-50">
-        <TeacherHeader />
+        <TeacherHeader user={user} />
 
         <main className="flex-1 overflow-y-auto p-6">
           <h1 className="text-2xl font-semibold mb-6">

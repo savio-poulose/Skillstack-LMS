@@ -11,12 +11,14 @@ const PaymentPage = () => {
   const [course, setCourse] = useState(null);
   const [paying, setPaying] = useState(false);
 
+  // Fetch course details
   useEffect(() => {
     const fetchCourse = async () => {
       try {
         const res = await api.get(`/courses/${id}`);
         setCourse(res.data);
-      } catch {
+      } catch (error) {
+        console.log(error);
         toast.error("Failed to load course");
         navigate("/student/dashboard");
       }
@@ -29,12 +31,13 @@ const PaymentPage = () => {
     try {
       setPaying(true);
 
+      // 🔥 ONLY CALL PAYMENT
       await api.post(`/payments/fake/${id}`);
-      await api.post(`/enroll/${id}`);
 
-toast.success("Payment & enrollment successful")
+      toast.success("Payment successful!");
 
-      navigate(`/student/my-courses`);
+      navigate("/student/my-courses");
+
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Payment failed"
@@ -67,7 +70,7 @@ toast.success("Payment & enrollment successful")
           <button
             onClick={handlePayment}
             disabled={paying}
-            className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
             {paying ? "Processing..." : "Pay Now"}
           </button>

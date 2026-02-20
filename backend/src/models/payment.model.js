@@ -14,7 +14,24 @@ const paymentSchema = new mongoose.Schema(
       required: true,
     },
 
+    // 👇 IMPORTANT — this must match Course model reference
+    teacher: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
     amount: {
+      type: Number,
+      required: true,
+    },
+
+    teacherAmount: {
+      type: Number,
+      required: true,
+    },
+
+    adminAmount: {
       type: Number,
       required: true,
     },
@@ -33,6 +50,7 @@ const paymentSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
 paymentSchema.index({ student: 1, course: 1 });
 
 module.exports = mongoose.model("Payment", paymentSchema);

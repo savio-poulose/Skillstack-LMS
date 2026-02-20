@@ -10,6 +10,7 @@ export default function ChatStudentList() {
   const [students, setStudents] = useState([]);
   const navigate = useNavigate();
   const socketRef = useRef(null);
+  const [user,setUser] = useState(null);
 
   // 🔹 Fetch students enrolled in teacher courses
   useEffect(() => {
@@ -51,13 +52,27 @@ export default function ChatStudentList() {
     };
   }, []);
 
+  //fetch user
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await api.get("/users/me"); 
+        setUser(res.data);
+      } catch (error) {
+        console.error("Error fetching teacher", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
   return (
     <div className="flex h-screen overflow-hidden">
       <TeacherSidebar />
 
       <div className="flex flex-col flex-1 overflow-hidden bg-gray-50">
         <div className="shrink-0">
-          <TeacherHeader />
+          <TeacherHeader user={user}/>
         </div>
 
         <main className="flex-1 overflow-y-auto p-6">

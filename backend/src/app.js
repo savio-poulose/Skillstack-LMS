@@ -17,6 +17,7 @@ const adminRoutes = require("./routes/admin.route.js")
 const quizRoutes = require("./routes/quiz.route");
 
 const chatRoutes = require("./routes/chat.route");
+const teacherRoutes = require("./routes/teacher.route.js");
 
 
 console.log("app.js ");
@@ -54,6 +55,9 @@ app.use("/api", quizRoutes);
 
 //chat routes
 app.use("/api",chatRoutes);
+
+//teacher
+app.use("/api/teacher", teacherRoutes);
 
 
 

@@ -28,6 +28,7 @@ import TeacherCourses from "./pages/teacher/MyCourses";
 import TeacherProfile from "./pages/teacher/TeacherProfile";
 import ChatStudentList from "./pages/teacher/ChatStudentList";
 import TeacherChatWindow from "./pages/teacher/TeacherChatWindow";
+import TeacherWallet from "./pages/teacher/TeacherWallet";
 
 // admin
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -201,6 +202,15 @@ function App() {
           element={
             <ProtectedRoute>
               <TeacherChatWindow />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/teacher/wallet"
+          element={
+            <ProtectedRoute>
+              <TeacherWallet />
             </ProtectedRoute>
           }
         />

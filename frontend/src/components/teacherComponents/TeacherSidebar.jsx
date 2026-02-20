@@ -71,6 +71,10 @@ const TeacherSidebar = () => {
           Talk to student
         </NavLink>
 
+        <NavLink to="/teacher/wallet" className={linkClass}>
+          Wallet
+        </NavLink>
+
         <NavLink to="/teacher/profile" className={linkClass}>
           Profile
         </NavLink>
