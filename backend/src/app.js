@@ -18,6 +18,7 @@ const quizRoutes = require("./routes/quiz.route");
 
 const chatRoutes = require("./routes/chat.route");
 const teacherRoutes = require("./routes/teacher.route.js");
+const feedbackRoutes = require("./routes/feedback.route.js")
 
 
 console.log("app.js ");
@@ -58,6 +59,9 @@ app.use("/api",chatRoutes);
 
 //teacher
 app.use("/api/teacher", teacherRoutes);
+
+//feedback
+app.use("/api/feedback", feedbackRoutes);
 
 
 

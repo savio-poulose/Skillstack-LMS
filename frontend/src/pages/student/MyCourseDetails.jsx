@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../api";
+import toast from "react-hot-toast";
 
 import StudentSidebar from "../../components/studentComponents/StudentSidebar";
 import StudentHeader from "../../components/studentComponents/StudentHeader";
@@ -15,27 +16,45 @@ const MyCourseDetail = () => {
   const [quizId, setQuizId] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Feedback states
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [hasSubmittedFeedback, setHasSubmittedFeedback] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // enrolled course + progress
+        // 1️⃣ Get enrolled course + progress
         const courseRes = await api.get(`/enroll/my-courses/${id}`);
         setCourse(courseRes.data.course);
         setProgress(courseRes.data.progress || 0);
 
-        // lessons
+        // 2️⃣ Get lessons
         const lessonsRes = await api.get(`/courses/${id}/lessons`);
         setLessons(lessonsRes.data);
 
-        // check if quiz exists for this course
+        // 3️⃣ Check quiz (optional)
         try {
           const quizRes = await api.get(`/courses/${id}/quiz`);
-          if (quizRes.data?._id) setQuizId(quizRes.data._id);
+          if (quizRes.data?._id) {
+            setQuizId(quizRes.data._id);
+          }
         } catch {
-          // no quiz yet — that's fine
+          // quiz not created yet — ignore
         }
+
+        // 4️⃣ Check if feedback already submitted
+        try {
+          const feedbackCheck = await api.get(`/feedback/my/${id}`);
+          setHasSubmittedFeedback(feedbackCheck.data.submitted);
+        } catch {
+          // ignore feedback check error
+        }
+
       } catch (err) {
-        console.error(err);
+        console.error("MyCourseDetail error:", err);
         navigate("/student/my-courses");
       } finally {
         setLoading(false);
@@ -45,10 +64,37 @@ const MyCourseDetail = () => {
     fetchData();
   }, [id, navigate]);
 
+  const isCourseCompleted = progress >= 100;
+
+  const handleSubmitFeedback = async () => {
+    if (rating === 0) {
+      toast.error("Please select a rating");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      await api.post("/feedback", {
+        courseId: id,
+        rating,
+        comment,
+      });
+
+      toast.success("Feedback submitted successfully");
+      setHasSubmittedFeedback(true);
+      setShowFeedbackModal(false);
+
+    } catch (error) {
+      const msg = error.response?.data?.message || "Submission failed";
+      toast.error(msg);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (loading) return <p className="p-6">Loading...</p>;
   if (!course) return null;
-
-  const isCourseCompleted = progress >= 100;
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -58,6 +104,7 @@ const MyCourseDetail = () => {
         <StudentHeader />
 
         <main className="flex-1 overflow-y-auto p-6 space-y-8">
+
           {/* THUMBNAIL */}
           {course.thumbnail && (
             <img
@@ -73,11 +120,11 @@ const MyCourseDetail = () => {
             <p className="text-gray-600 max-w-3xl">{course.description}</p>
           </div>
 
-          {/* QUIZ UNLOCKED BANNER */}
+          {/* QUIZ UNLOCK */}
           {isCourseCompleted && quizId && (
-            <div className="max-w-3xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+            <div className="max-w-3xl bg-green-50 border border-green-200 rounded-xl p-6 flex justify-between items-center">
               <div>
-                <p className="text-green-800 font-bold text-lg mb-0.5">
+                <p className="text-green-800 font-bold text-lg">
                   🎉 Course Complete! Quiz Unlocked
                 </p>
                 <p className="text-green-600 text-sm">
@@ -86,18 +133,36 @@ const MyCourseDetail = () => {
               </div>
               <button
                 onClick={() => navigate(`/student/quiz/${quizId}`)}
-                className="flex-shrink-0 px-6 py-2.5 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors shadow-sm"
+                className="px-6 py-2 bg-green-600 text-white rounded-lg"
               >
                 Take Quiz →
               </button>
             </div>
           )}
 
-          {/* PROGRESS BAR */}
+          {/* FEEDBACK BUTTON */}
+          {isCourseCompleted && !hasSubmittedFeedback && (
+            <div className="max-w-3xl">
+              <button
+                onClick={() => setShowFeedbackModal(true)}
+                className="px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
+              >
+                ⭐ Give Feedback
+              </button>
+            </div>
+          )}
+
+          {hasSubmittedFeedback && (
+            <p className="text-green-600 font-medium">
+              You have already submitted feedback.
+            </p>
+          )}
+
+          {/* PROGRESS */}
           <div className="max-w-3xl">
-            <div className="flex justify-between text-sm text-gray-500 mb-1">
+            <div className="flex justify-between text-sm mb-1">
               <span>Course Progress</span>
-              <span className="font-semibold text-gray-700">{progress}%</span>
+              <span>{progress}%</span>
             </div>
             <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
               <div
@@ -107,24 +172,7 @@ const MyCourseDetail = () => {
             </div>
           </div>
 
-          {/* BRAND MESSAGE */}
-          <div className="bg-white border rounded-lg p-6 shadow-sm max-w-3xl">
-            <h2 className="text-xl font-semibold mb-3">
-              You're building more than skills here
-            </h2>
-            <p className="text-gray-600 leading-relaxed">
-              Learning alone is hard. Feeling lost is normal.
-              <br /><br />
-              Think of SkillStack as the brother you never had —
-              the one who pushes you when you're stuck,
-              explains things without judging,
-              and reminds you why you started.
-              <br /><br />
-              No shortcuts. Just real skills, built step by step.
-            </p>
-          </div>
-
-          {/* LESSON LIST */}
+          {/* LESSONS */}
           <div className="max-w-3xl">
             <h2 className="text-xl font-semibold mb-3">Lessons</h2>
 
@@ -147,23 +195,54 @@ const MyCourseDetail = () => {
             )}
           </div>
 
-          {/* CTA */}
-          <button
-            onClick={() => {
-              if (lessons.length > 0) {
-                navigate(`/student/learn/${id}/${lessons[0]._id}`);
-              }
-            }}
-            disabled={lessons.length === 0}
-            className={`px-8 py-3 rounded-lg font-semibold transition ${lessons.length === 0
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 text-white hover:bg-blue-700"
-              }`}
-          >
-            Start Learning
-          </button>
         </main>
       </div>
+
+      {/* FEEDBACK MODAL */}
+      {showFeedbackModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-md p-6 rounded-xl shadow-lg space-y-4">
+            <h2 className="text-xl font-semibold">Rate this course</h2>
+
+            <div className="flex space-x-2 text-3xl">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => setRating(star)}
+                  className={star <= rating ? "text-yellow-400" : "text-gray-300"}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              rows="4"
+              placeholder="Write your review..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              className="w-full border rounded-lg p-3"
+            />
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowFeedbackModal(false)}
+                className="px-4 py-2 bg-gray-200 rounded-lg"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleSubmitFeedback}
+                disabled={submitting}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+              >
+                {submitting ? "Submitting..." : "Submit"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

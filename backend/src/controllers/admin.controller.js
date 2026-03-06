@@ -1,4 +1,6 @@
 const Payment = require("../models/payment.model");
+const User = require("../models/user.model");
+const Course = require("../models/course.model");
 
 /**
  * GET /api/admin/wallet
@@ -10,15 +12,24 @@ const getAdminWallet = async (req, res) => {
       {
         $group: {
           _id: null,
-          totalRevenue: { $sum: "$adminAmount" },
+          totalPlatformRevenue: { $sum: "$amount" },
+          totalTeacherPayout: { $sum: "$teacherAmount" },
+          totalAdminCommission: { $sum: "$adminAmount" },
           totalTransactions: { $sum: 1 },
         },
       },
     ]);
 
-    res.json(result[0] || { totalRevenue: 0, totalTransactions: 0 });
-
+    res.json(
+      result[0] || {
+        totalPlatformRevenue: 0,
+        totalTeacherPayout: 0,
+        totalAdminCommission: 0,
+        totalTransactions: 0,
+      }
+    );
   } catch (error) {
+    console.error("Admin wallet error:", error);
     res.status(500).json({ message: "Failed to fetch wallet" });
   }
 };
@@ -52,7 +63,75 @@ const getAllPayments = async (req, res) => {
   }
 };
 
+const getTeacherEarnings = async (req, res) => {
+  try {
+    const result = await Payment.aggregate([
+      { $match: { status: "success" } },
+      {
+        $group: {
+          _id: "$teacher",
+          totalEarned: { $sum: "$teacherAmount" },
+          totalSales: { $sum: 1 },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "teacher",
+        },
+      },
+      { $unwind: "$teacher" },
+      {
+        $project: {
+          teacherId: "$teacher._id",
+          name: "$teacher.name",
+          email: "$teacher.email",
+          totalEarned: 1,
+          totalSales: 1,
+        },
+      },
+    ]);
+
+    res.json(result);
+  } catch (error) {
+    console.error("Teacher earnings error:", error);
+    res.status(500).json({ message: "Failed to fetch teacher earnings" });
+  }
+};
+
+const getAdminStats = async (req, res) => {
+  try {
+    const totalTeachers = await User.countDocuments({ role: "teacher" });
+
+    const pendingApprovals = await User.countDocuments({
+      role: "teacher",
+      isApproved: false,
+    });
+
+    const totalCourses = await Course.countDocuments();
+
+    const recentTeachers = await User.find({ role: "teacher" })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select("name email isApproved");
+
+    res.json({
+      totalTeachers,
+      pendingApprovals,
+      totalCourses,
+      recentTeachers,
+    });
+  } catch (error) {
+    console.error("Admin stats error:", error);
+    res.status(500).json({ message: "Failed to fetch stats" });
+  }
+};
+
 module.exports = {
   getAdminWallet,
   getAllPayments,
+  getTeacherEarnings,
+  getAdminStats
 };

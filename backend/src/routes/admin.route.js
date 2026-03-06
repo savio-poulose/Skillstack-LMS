@@ -1,16 +1,48 @@
 const express = require("express");
+const router = express.Router();
+
 const User = require("../models/user.model");
 const Course = require("../models/course.model");
 
 const authMiddleware = require("../middlewares/auth");
 const adminMiddleware = require("../middlewares/admin.middleware");
+const { getAdminStats } = require("../controllers/admin.controller");
+
+router.get(
+  "/dashboard-stats",
+  authMiddleware,
+  adminMiddleware,
+  getAdminStats
+);
+
+const {
+  getAdminWallet,
+  getTeacherEarnings,
+} = require("../controllers/admin.controller");
+
+/* ========================
+   WALLET ROUTES
+======================== */
+
+router.get(
+  "/wallet-summary",
+  authMiddleware,
+  adminMiddleware,
+  getAdminWallet
+);
+
+router.get(
+  "/teacher-earnings",
+  authMiddleware,
+  adminMiddleware,
+  getTeacherEarnings
+);
 
 
-const router = express.Router();
+/* ========================
+   TEACHER MANAGEMENT
+======================== */
 
-/**
- * GET all teachers
- */
 router.get(
   "/teachers",
   authMiddleware,
@@ -25,9 +57,6 @@ router.get(
   }
 );
 
-/**
- * APPROVE / BLOCK teacher
- */
 router.patch(
   "/teachers/:id",
   authMiddleware,
@@ -52,9 +81,11 @@ router.patch(
   }
 );
 
-/**
- * GET all students
- */
+
+/* ========================
+   STUDENT MANAGEMENT
+======================== */
+
 router.get(
   "/students",
   authMiddleware,
@@ -69,9 +100,6 @@ router.get(
   }
 );
 
-/**
- * BLOCK / UNBLOCK student
- */
 router.patch(
   "/students/:id",
   authMiddleware,
@@ -96,17 +124,22 @@ router.patch(
   }
 );
 
-/**
- * GET all courses
- */
+
+/* ========================
+   COURSE MANAGEMENT
+======================== */
+
 router.get(
   "/courses",
   authMiddleware,
   adminMiddleware,
   async (req, res) => {
     try {
-      const courses = await Course.find()
-        .populate("createdBy", "name email"); // ✅ FIXED
+      const courses = await Course.find().populate(
+        "createdBy",
+        "name email"
+      );
+
       res.json(courses);
     } catch (err) {
       console.error("ADMIN COURSES ERROR:", err);
@@ -115,9 +148,6 @@ router.get(
   }
 );
 
-/**
- * ENABLE / DISABLE course
- */
 router.patch(
   "/courses/:id",
   authMiddleware,
@@ -127,6 +157,7 @@ router.patch(
       const { isActive } = req.body;
 
       const course = await Course.findById(req.params.id);
+
       if (!course) {
         return res.status(404).json({ message: "Course not found" });
       }

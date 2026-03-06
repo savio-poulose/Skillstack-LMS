@@ -71,19 +71,11 @@ const AdminSidebar = () => {
           Courses
         </NavLink>
 
-        <NavLink to="/admin/payments" className={linkClass}>
-          Payment Reports
-        </NavLink>
-
-        <NavLink to="/admin/reports" className={linkClass}>
-          Reports
-        </NavLink>
+        
         <NavLink to="/admin/wallet" className={linkClass}>
           Wallet
         </NavLink>
-        <NavLink to="/admin/profile" className={linkClass}>
-          Profile
-        </NavLink>
+        
       </nav>
 
       {/* LOGOUT */}

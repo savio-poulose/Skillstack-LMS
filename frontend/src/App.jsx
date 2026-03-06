@@ -35,6 +35,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import Teacher from "./pages/admin/Teachers";
 import Students from "./pages/admin/Student";
 import Courses from "./pages/admin/Courses";
+import AdminWallet from "./pages/admin/AdminWallet";
 
 function App() {
   return (
@@ -245,6 +246,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <Courses />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/wallet"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminWallet />
             </ProtectedRoute>
           }
         />

@@ -15,7 +15,7 @@ const StudentHeader = ({ user }) => {
         className="flex items-center gap-3 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition"
       >
         <img
-          src={user?.avatar || "frontend/src/assets/default-avatar.webp"}
+          src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXvRLjvJ-BNF3VEjaP-c9Q-fentb3KZ-t5qw&s"}
           alt="Profile"
           className="w-9 h-9 rounded-full object-cover border border-blue-200"
         />
