@@ -79,6 +79,10 @@ const AdminSidebar = () => {
         <NavLink to="/admin/feedback" className={linkClass}>
           Feedback
         </NavLink>
+
+        <NavLink to="/admin/contact" className={linkClass}>
+          Contact
+        </NavLink>
         
       </nav>
 

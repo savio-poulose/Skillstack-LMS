@@ -22,6 +22,7 @@ const MyCourseDetail = () => {
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [hasSubmittedFeedback, setHasSubmittedFeedback] = useState(false);
+  const [user,setUser] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -93,15 +94,30 @@ const MyCourseDetail = () => {
     }
   };
 
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await api.get("/users/me");
+        setUser(res.data);
+      } catch (error) {
+        console.error("Error fetching user", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
   if (loading) return <p className="p-6">Loading...</p>;
   if (!course) return null;
+
 
   return (
     <div className="flex h-screen overflow-hidden">
       <StudentSidebar />
 
       <div className="flex flex-col flex-1 bg-gray-50">
-        <StudentHeader />
+        <StudentHeader user={user}/>
 
         <main className="flex-1 overflow-y-auto p-6 space-y-8">
 

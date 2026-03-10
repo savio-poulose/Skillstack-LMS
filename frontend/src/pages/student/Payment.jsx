@@ -10,6 +10,7 @@ const PaymentPage = () => {
 
   const [course, setCourse] = useState(null);
   const [paying, setPaying] = useState(false);
+  const [user,setUser] = useState(null);
 
   // Fetch course details
   useEffect(() => {
@@ -26,6 +27,19 @@ const PaymentPage = () => {
 
     fetchCourse();
   }, [id, navigate]);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await api.get("/users/me");
+        setUser(res.data);
+      } catch (error) {
+        console.error("Error fetching user", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const handlePayment = async () => {
     try {
@@ -51,7 +65,7 @@ const PaymentPage = () => {
 
   return (
     <>
-      <StudentHeader />
+      <StudentHeader user={user}/>
 
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md space-y-4">

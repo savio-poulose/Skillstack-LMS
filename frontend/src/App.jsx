@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Landing from "./pages/Landing";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -31,6 +33,7 @@ import TeacherChatWindow from "./pages/teacher/TeacherChatWindow";
 import TeacherWallet from "./pages/teacher/TeacherWallet";
 import TeacherFeedback from "./pages/teacher/TeacherFeedback";
 
+
 // admin
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import Teacher from "./pages/admin/Teachers";
@@ -38,7 +41,8 @@ import Students from "./pages/admin/Student";
 import Courses from "./pages/admin/Courses";
 import AdminWallet from "./pages/admin/AdminWallet";
 import AdminFeedback from "./pages/admin/Feedback"
-import Feedback from "./pages/admin/Feedback";
+// import Feedback from "./pages/admin/Feedback";
+import AdminContact from "./pages/admin/Contact"
 
 function App() {
   return (
@@ -47,6 +51,8 @@ function App() {
         {/* PUBLIC */}
         <Route path="/" element={<Navigate to="/landing" />} />
         <Route path="/landing" element={<Landing />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
@@ -274,6 +280,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <AdminFeedback />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/contact"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminContact />
             </ProtectedRoute>
           }
         />

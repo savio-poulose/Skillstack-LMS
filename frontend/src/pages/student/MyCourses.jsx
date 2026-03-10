@@ -8,6 +8,7 @@ import StudentHeader from "../../components/studentComponents/StudentHeader";
 const MyCourses = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [user,setUser] = useState(null)
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,12 +34,25 @@ const MyCourses = () => {
     fetchMyCourses();
   }, []);
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await api.get("/users/me");
+        setUser(res.data);
+      } catch (error) {
+        console.error("Error fetching user", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
   return (
     <div className="flex h-screen overflow-hidden">
       <StudentSidebar />
 
       <div className="flex flex-col flex-1 bg-gray-50">
-        <StudentHeader />
+        <StudentHeader user = {user}/>
 
         <main className="flex-1 p-6 overflow-y-auto">
           <h1 className="text-2xl font-bold mb-6">My Courses</h1>
