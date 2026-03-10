@@ -6,7 +6,7 @@ const Course = require("../models/course.model");
 
 const authMiddleware = require("../middlewares/auth");
 const adminMiddleware = require("../middlewares/admin.middleware");
-const { getAdminStats } = require("../controllers/admin.controller");
+const { getAdminStats,getAllFeedback } = require("../controllers/admin.controller");
 
 router.get(
   "/dashboard-stats",
@@ -19,6 +19,7 @@ const {
   getAdminWallet,
   getTeacherEarnings,
 } = require("../controllers/admin.controller");
+const { route } = require("./feedback.route");
 
 /* ========================
    WALLET ROUTES
@@ -59,7 +60,7 @@ router.get(
 
 router.patch(
   "/teachers/:id",
-  authMiddleware,
+  authMiddleware, 
   adminMiddleware,
   async (req, res) => {
     try {
@@ -171,5 +172,7 @@ router.patch(
     }
   }
 );
+
+router.get("/feedback",authMiddleware,adminMiddleware,getAllFeedback);  
 
 module.exports = router;

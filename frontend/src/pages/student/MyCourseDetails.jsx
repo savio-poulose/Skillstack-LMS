@@ -41,16 +41,16 @@ const MyCourseDetail = () => {
           if (quizRes.data?._id) {
             setQuizId(quizRes.data._id);
           }
-        } catch {
-          // quiz not created yet — ignore
+        } catch(err){
+          console.log(err); 
         }
 
-        // 4️⃣ Check if feedback already submitted
+        // 4️⃣ Check feedback
         try {
           const feedbackCheck = await api.get(`/feedback/my/${id}`);
           setHasSubmittedFeedback(feedbackCheck.data.submitted);
-        } catch {
-          // ignore feedback check error
+        } catch(err) {
+          console.log(err)
         }
 
       } catch (err) {
@@ -119,6 +119,20 @@ const MyCourseDetail = () => {
             <h1 className="text-3xl font-bold mb-2">{course.title}</h1>
             <p className="text-gray-600 max-w-3xl">{course.description}</p>
           </div>
+
+          {/* START LEARNING BUTTON */}
+          {lessons.length > 0 && (
+            <div className="max-w-3xl">
+              <button
+                onClick={() =>
+                  navigate(`/student/learn/${id}/${lessons[0]._id}`)
+                }
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Start Learning
+              </button>
+            </div>
+          )}
 
           {/* QUIZ UNLOCK */}
           {isCourseCompleted && quizId && (
@@ -205,11 +219,11 @@ const MyCourseDetail = () => {
             <h2 className="text-xl font-semibold">Rate this course</h2>
 
             <div className="flex space-x-2 text-3xl">
-              {[1, 2, 3, 4, 5].map((star) => (
+              {[1,2,3,4,5].map((star)=>(
                 <button
                   key={star}
-                  onClick={() => setRating(star)}
-                  className={star <= rating ? "text-yellow-400" : "text-gray-300"}
+                  onClick={()=>setRating(star)}
+                  className={star<=rating?"text-yellow-400":"text-gray-300"}
                 >
                   ★
                 </button>
@@ -220,13 +234,13 @@ const MyCourseDetail = () => {
               rows="4"
               placeholder="Write your review..."
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={(e)=>setComment(e.target.value)}
               className="w-full border rounded-lg p-3"
             />
 
             <div className="flex justify-end space-x-3">
               <button
-                onClick={() => setShowFeedbackModal(false)}
+                onClick={()=>setShowFeedbackModal(false)}
                 className="px-4 py-2 bg-gray-200 rounded-lg"
               >
                 Cancel
@@ -237,12 +251,13 @@ const MyCourseDetail = () => {
                 disabled={submitting}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg"
               >
-                {submitting ? "Submitting..." : "Submit"}
+                {submitting?"Submitting...":"Submit"}
               </button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 };

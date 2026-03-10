@@ -12,7 +12,7 @@ const feedbackSchema = new mongoose.Schema(
       ref: "Course",
       required: true,
     },
-    rating: {
+    rating: { 
       type: Number,
       min: 1,
       max: 5,

@@ -1,6 +1,7 @@
 const Payment = require("../models/payment.model");
 const User = require("../models/user.model");
 const Course = require("../models/course.model");
+const Feedback = require("../models/feedback.model");
 
 /**
  * GET /api/admin/wallet
@@ -129,9 +130,25 @@ const getAdminStats = async (req, res) => {
   }
 };
 
+//getfeedback
+const getAllFeedback = async (req, res) => {
+  try {
+    const feedback = await Feedback.find()
+      .populate("user", "name email")
+      .populate("course", "title")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(feedback);
+  } catch (error) {
+    console.error("ADMIN FEEDBACK ERROR:", error);
+    res.status(500).json({ message: "Failed to fetch feedback" });
+  }
+};
+
 module.exports = {
   getAdminWallet,
   getAllPayments,
   getTeacherEarnings,
-  getAdminStats
+  getAdminStats,
+  getAllFeedback
 };

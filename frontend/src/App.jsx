@@ -29,6 +29,7 @@ import TeacherProfile from "./pages/teacher/TeacherProfile";
 import ChatStudentList from "./pages/teacher/ChatStudentList";
 import TeacherChatWindow from "./pages/teacher/TeacherChatWindow";
 import TeacherWallet from "./pages/teacher/TeacherWallet";
+import TeacherFeedback from "./pages/teacher/TeacherFeedback";
 
 // admin
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -36,6 +37,8 @@ import Teacher from "./pages/admin/Teachers";
 import Students from "./pages/admin/Student";
 import Courses from "./pages/admin/Courses";
 import AdminWallet from "./pages/admin/AdminWallet";
+import AdminFeedback from "./pages/admin/Feedback"
+import Feedback from "./pages/admin/Feedback";
 
 function App() {
   return (
@@ -215,6 +218,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/teacher/feedback"
+          element={
+            <ProtectedRoute>
+              <TeacherFeedback />
+            </ProtectedRoute>
+          }
+        />
+        
 
         {/* ADMIN */}
         <Route
@@ -254,6 +266,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <AdminWallet />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/feedback"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminFeedback />
             </ProtectedRoute>
           }
         />

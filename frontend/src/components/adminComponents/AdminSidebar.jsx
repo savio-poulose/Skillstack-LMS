@@ -75,6 +75,10 @@ const AdminSidebar = () => {
         <NavLink to="/admin/wallet" className={linkClass}>
           Wallet
         </NavLink>
+
+        <NavLink to="/admin/feedback" className={linkClass}>
+          Feedback
+        </NavLink>
         
       </nav>
 
