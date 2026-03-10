@@ -117,4 +117,29 @@ router.get("/course/:courseId", async (req, res) => {
   }
 });
 
+/* =========================
+   PUBLIC TESTIMONIALS
+========================= */
+
+router.get("/public", async (req, res) => {
+  try {
+
+    const feedbacks = await Feedback.find({
+      rating: { $gte: 4 }   // ⭐ only ratings 4 or 5
+    })
+      .populate("user", "name avatar")
+      .populate("course", "title")
+      .sort({ createdAt: -1 })
+      .limit(3);
+
+    res.json(feedbacks);
+
+  } catch (error) {
+    console.error("Public feedback fetch error:", error);
+    res.status(500).json({
+      message: "Failed to fetch testimonials",
+    });
+  }
+});
+
 module.exports = router;

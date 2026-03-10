@@ -1,6 +1,7 @@
 const Payment = require("../models/payment.model");
 const Feedback = require("../models/feedback.model");
 const Course = require("../models/course.model");
+const Enrollment = require("../models/enrollment.model");
 
 
 /* =========================
@@ -94,8 +95,33 @@ const getTeacherFeedback = async (req, res) => {
   }
 };
 
+const getTeacherEnrollments = async (req, res) => {
+  try {
+
+    const teacherId = req.user.id;
+
+    const courses = await Course.find({ createdBy: teacherId });
+
+    const courseIds = courses.map(c => c._id);
+
+    const enrollments = await Enrollment.find({
+      course: { $in: courseIds }
+    })
+      .populate("student", "name email")
+      .populate("course", "title");
+
+    res.json(enrollments);
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch enrollments"
+    });
+  }
+};
+
 module.exports = {
   getTeacherEarnings,
   getTeacherPayments,
-  getTeacherFeedback
+  getTeacherFeedback,
+  getTeacherEnrollments
 };
